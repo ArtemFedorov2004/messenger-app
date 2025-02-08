@@ -1,4 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
+import Messages from "./Messages";
+import MessageInput from "./MessageInput";
+import SendButton from "./SendButton";
 
 function App() {
     const [message, setMessage] = useState('');
@@ -79,63 +82,24 @@ function App() {
                     maxHeight: 'calc(100vh - 120px)',
                 }}
             >
-                {messages.map((msg, index) => (
-                    <div key={index}
-                         style={{
-                             marginBottom: '10px',
-                             padding: '10px',
-                             border: '1px solid #ccc',
-                             borderRadius: '4px',
-                             width: '50%',
-                             marginLeft: 'auto',
-                             backgroundColor: '#f1f1f1',
-                             wordWrap: 'break-word',
-                             position: 'relative',
-                         }}
-                    >
-                        <div>{msg.content}</div>
-
-                        <div style={{
-                            fontSize: '12px',
-                            color: '#888',
-                            marginTop: '5px',
-                            alignSelf: 'flex-end',
-                        }}>
-                            {new Date(msg.createdAt).toISOString()}
-                        </div>
-                    </div>
-                ))}
+                <Messages messages={messages}/>
                 <div ref={messageEndRef}/>
             </div>
 
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0px'}}>
-                <input
-                    type="text"
-                    value={message}
-                    onChange={handleChange}
-                    onKeyDown={handleKeyDown}
-                    style={{
-                        padding: '10px',
-                        width: '80%',
-                        marginRight: '10px',
-                        borderRadius: '4px',
-                        border: '1px solid #ccc',
-                    }}
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '0px',
+                }}
+            >
+                <MessageInput
+                    message={message}
+                    handleChange={handleChange}
+                    handleKeyDown={handleKeyDown}
                 />
-
-                <button
-                    onClick={handleSubmit}
-                    style={{
-                        padding: '10px 20px',
-                        backgroundColor: '#4CAF50',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                    }}
-                >
-                    Отправить сообщение
-                </button>
+                <SendButton handleSubmit={handleSubmit}/>
             </div>
         </div>
     );
