@@ -2,6 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import Messages from "./Messages";
 import MessageInput from "./MessageInput";
 import SendButton from "./SendButton";
+import api from "./api/api";
 
 function App() {
     const [message, setMessage] = useState('');
@@ -15,22 +16,19 @@ function App() {
     const handleSubmit = async () => {
         if (message.trim()) {
             const createdAt = new Date().toISOString();
-            try {
-                const response = await fetch('http://localhost:8080/messages', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({content: message, createdAt: createdAt}),
-                });
+            const messageToSend = {
+                content: message,
+                createdAt: createdAt,
+            };
 
-                if (response.ok) {
+            api.post('/messages', messageToSend)
+                .then(response => {
                     setMessages([...messages, {content: message, createdAt}]);
                     setMessage('');
-                }
-            } catch (error) {
-                console.error('Error sending message:', error);
-            }
+                })
+                .catch(error => {
+                    console.error('Error sending message:', error);
+                });
         }
     };
 
@@ -48,15 +46,13 @@ function App() {
 
     useEffect(() => {
         const fetchMessages = async () => {
-            try {
-                const response = await fetch('http://localhost:8080/messages');
-                if (response.ok) {
-                    const data = await response.json();
-                    setMessages(data);
-                }
-            } catch (error) {
-                console.error('Error sending message:', error);
-            }
+            api.get('/messages')
+                .then(response => {
+                    setMessages(response.data);
+                })
+                .catch(error => {
+                    console.error('Error sending message:', error);
+                });
         };
 
         fetchMessages();
