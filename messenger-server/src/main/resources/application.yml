@@ -3,3 +3,9 @@ spring:
     url: jdbc:postgresql://localhost:5432/messenger_db
     username: postgres
     password: q
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "http://localhost:9090/realms/messenger"
+allowed-origins: http://localhost:3000, "http://localhost:9090

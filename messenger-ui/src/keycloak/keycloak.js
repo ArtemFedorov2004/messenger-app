@@ -1,4 +1,5 @@
 import Keycloak from 'keycloak-js'
+import api from "../api/api";
 
 const initKeycloak = (onAuthenticatedCallback) => {
     const keycloak = new Keycloak({
@@ -10,6 +11,10 @@ const initKeycloak = (onAuthenticatedCallback) => {
     keycloak.init({onLoad: "login-required"})
         .then(authenticated => {
             if (authenticated) {
+                const token = keycloak.token;
+
+                api.defaults.headers['Authorization'] = `Bearer ${token}`;
+
                 onAuthenticatedCallback(keycloak);
             } else {
                 window.location.reload();

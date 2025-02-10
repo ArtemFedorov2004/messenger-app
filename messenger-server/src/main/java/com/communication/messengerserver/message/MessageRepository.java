@@ -43,7 +43,7 @@ public class MessageRepository implements RowMapper<Message> {
                     return ps;
                 }, keyHolder);
 
-        if (keyHolder.getKeys() == null || !keyHolder.getKeys().containsKey("id")) {
+        if (keyHolder.getKeys() != null && keyHolder.getKeys().containsKey("id")) {
             Integer id = (Integer) (keyHolder.getKeys().get("id"));
             return jdbcTemplate.queryForObject("SELECT * FROM message WHERE id = ?", this, id);
         } else {
