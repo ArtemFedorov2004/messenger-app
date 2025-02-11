@@ -3,7 +3,6 @@ import {useNavigate} from 'react-router-dom';
 import Messages from "../components/chat/Messages";
 import MessageInput from "../components/chat/MessageInput";
 import SendButton from "../components/chat/SendButton";
-import api from "../api/api";
 import './ChatPage.css'
 import {useKeycloak} from "@react-keycloak/web";
 
@@ -25,8 +24,16 @@ const ChatPage = () => {
                 createdAt: createdAt,
             };
 
-            api().post('/messages', messageToSend)
-                .then(response => {
+            fetch('http://localhost:8080/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
+                },
+                body: JSON.stringify(messageToSend),
+            })
+                .then(response => response.json())
+                .then(data => {
                     setMessages([...messages, {content: message, createdAt}]);
                     setMessage('');
                 })
@@ -51,19 +58,33 @@ const ChatPage = () => {
     const {keycloak, initialized} = useKeycloak();
 
     useEffect(() => {
-        const fetchMessages = async () => {
-            api().get('/messages')
-                .then(response => {
-                    setMessages(response.data);
-                })
-                .catch(error => {
-                    console.error('Error sending message:', error);
-                });
-        };
-        if (keycloak.token) {
-            fetchMessages();
-        }
-    }, [keycloak.token]);
+            const fetchMessages = async () => {
+                    fetch('http://localhost:8080/messages', {
+                        method: 'GET',
+                        headers: {
+                            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
+                        },
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`Error: ${response.statusText}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            setMessages(data);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching messages:', error);
+                        });
+                }
+            ;
+            if (keycloak.token) {
+                fetchMessages();
+            }
+        }, [keycloak.token]
+    )
+    ;
 
     const handleUserPage = () => {
         navigate('/user');
