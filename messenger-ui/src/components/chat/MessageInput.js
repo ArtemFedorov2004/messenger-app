@@ -1,4 +1,5 @@
 import React from 'react';
+import './MessageInput.css'
 
 const MessageInput = ({message, handleChange, handleKeyDown}) => {
     return (
@@ -7,13 +8,7 @@ const MessageInput = ({message, handleChange, handleKeyDown}) => {
             value={message}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            style={{
-                padding: '10px',
-                width: '80%',
-                marginRight: '10px',
-                borderRadius: '4px',
-                border: '1px solid #ccc',
-            }}
+            className="message-input"
         />
     );
 };
