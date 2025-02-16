@@ -28,4 +28,11 @@ public class MessageController {
     public ResponseEntity<List<Message>> getAllMessages() {
         return ResponseEntity.ok(messageService.getAllMessages());
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Message> editMessage(@PathVariable Integer id, @RequestBody Message updatedMessage) {
+        Message message = messageService.editMessage(id, updatedMessage);
+
+        return ResponseEntity.ok(message);
+    }
 }
