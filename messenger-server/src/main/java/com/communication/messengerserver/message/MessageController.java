@@ -7,6 +7,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
+/*
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/messages")
@@ -35,4 +36,4 @@ public class MessageController {
 
         return ResponseEntity.ok(message);
     }
-}
+}*/

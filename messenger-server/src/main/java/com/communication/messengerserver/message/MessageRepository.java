@@ -1,23 +1,11 @@
 package com.communication.messengerserver.message;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
-@Repository
-@RequiredArgsConstructor
-public class MessageRepository implements RowMapper<Message> {
+/*@Repository
+@RequiredArgsConstructor*/
+/*public class MessageRepository implements RowMapper<Message> {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -75,4 +63,4 @@ public class MessageRepository implements RowMapper<Message> {
     public Optional<Message> findById(Integer id) {
         return Optional.of(jdbcTemplate.queryForObject("SELECT * FROM message WHERE id = ?", this, id));
     }
-}
+}*/

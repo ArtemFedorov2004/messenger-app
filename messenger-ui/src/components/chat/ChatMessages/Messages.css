@@ -1,0 +1,9 @@
+.messages-container {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    max-height: calc(100vh - 120px);
+}

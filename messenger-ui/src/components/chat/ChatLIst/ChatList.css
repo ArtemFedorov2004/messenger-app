@@ -1,0 +1,56 @@
+.chat-list h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.chat-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.chat-list li {
+    display: flex;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.chat-list li:hover {
+    background-color: #e0e0e0; /* Цвет фона при наведении */
+}
+
+.chat-list li.selected {
+    background-color: #f0f0f0;
+}
+
+.chat-item {
+    display: flex;
+    align-items: center;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.chat-info {
+    display: flex;
+    flex-direction: column;
+    max-width: 70%;
+}
+
+.chat-name {
+    font-weight: bold;
+    white-space: nowrap; /* Запрещаем перенос текста */
+    overflow: hidden;    /* Скрываем текст, который не помещается */
+    text-overflow: ellipsis; /* Показываем многоточие, если текст не помещается */
+}
+
+.last-message {
+    color: #555;
+    font-size: 14px;
+    white-space: nowrap; /* Запрещаем перенос текста */
+    overflow: hidden;    /* Скрываем текст, который не помещается */
+    text-overflow: ellipsis; /* Показываем многоточие, если текст не помещается */
+}

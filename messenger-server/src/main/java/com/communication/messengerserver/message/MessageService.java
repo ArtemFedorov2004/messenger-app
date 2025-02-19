@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-@Service
+/*@Service
 @RequiredArgsConstructor
 public class MessageService {
 
@@ -37,4 +37,4 @@ public class MessageService {
 
         return message;
     }
-}
+}*/
