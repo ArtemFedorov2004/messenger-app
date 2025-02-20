@@ -1,121 +1,149 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import Messages from "../../components/chat/ChatMessages/Messages";
-import MessageInput from "../../components/chat/ChatMessages/MessageInput";
-import SendButton from "../../components/chat/ChatMessages/SendButton";
 import './ChatPage.css'
-import {useKeycloak} from "@react-keycloak/web";
 import ChatList from "../../components/chat/ChatLIst/ChatList";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
+import {useUser} from "../../contexts/UserContext";
 
 const ChatPage = () => {
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
     const [stompClient, setStompClient] = useState(null);
     const [connectedUsers, setConnectedUsers] = useState([]);
+    const [selectedUser, setSelectedUser] = useState(null);
 
     const navigate = useNavigate();
-    const {keycloak, initialized} = useKeycloak();
 
-    const [selectedUser, setSelectedUser] = useState(null);
     const selectedUserRef = useRef(null);
+
+    const {user} = useUser();
 
     useEffect(() => {
         selectedUserRef.current = selectedUser;
     }, [selectedUser]);
 
+    const connectSocket = useCallback(() => {
+        const socket = new SockJS(`http://localhost:8080/ws`);
+        const client = Stomp.over(socket);
+
+        client.connect({}, () => {
+            setStompClient(client);
+            client.subscribe(`/user/${user.id}/queue/messages`, onMessageReceived);
+            client.subscribe(`/user/public`, onUserConnect);
+
+            client.send(`/app/user.addUser`, {}, JSON.stringify(user));
+
+            fetchConnectedUsers();
+        });
+
+        return client;
+    }, [user]);
+
     useEffect(() => {
-        // КОСТЫЛЬ ИЗ ЗА АССИНХРОННОСТИ
-        if (keycloak.authenticated) {
-            // КОНКРЕНО В МОЕМ СЛУЧАЕ
-            let nickname = keycloak.tokenParsed?.given_name;
-            let fullname = keycloak.tokenParsed?.given_name;
+        const client = connectSocket();
 
-            const socket = new SockJS(`http://localhost:8080/ws`);
-            const client = Stomp.over(socket);
+        return () => {
+            if (client && client.connected) {
+                client.disconnect();
+            }
+        };
+    }, [connectSocket]);
 
-            client.connect({}, () => {
-                setStompClient(client);
-                client.subscribe(`/user/${nickname}/queue/messages`, onMessageReceived);
-                client.subscribe(`/user/public`, onUserConnect);
-
-                client.send(`/app/user.addUser`, {}, JSON.stringify({
-                    nickName: nickname,
-                    fullName: fullname,
-                    status: 'ONLINE'
-                }));
-                fetchConnectedUsers();
-            });
-        }
-
-    }, [keycloak.token]);
-
-    // ----
     const onUserConnect = (payload) => {
-        const user = JSON.parse(payload.body);
-        const updatedUser = {
-            ...user,
-            id: user.nickName,  // Добавляем новый ключ и его значение
-            name: user.nickName,
-            lastMessage: 'bablabal'
-        }
-        console.log(updatedUser)
-        setConnectedUsers((prevUsers) => [...prevUsers, updatedUser]);
+        const newUser = JSON.parse(payload.body);
+        setConnectedUsers((prevUsers) => [
+            ...prevUsers,
+            {...newUser, lastMessage: 'bablabal'}
+        ]);
     }
 
-    // ----
     const fetchConnectedUsers = async () => {
-        const response = await fetch(`http://localhost:8080/users`);
-        const users = await response.json();
-        // МОЕ НОУ ХАУ
-        const updatedUsers = users.map(user => {
-            return {
-                ...user,            // Распаковываем старые свойства объекта
-                id: user.nickName,  // Добавляем новый ключ и его значение
-                name: user.nickName,
-                lastMessage: 'bablabal'
-            };
-        });
-        console.log(updatedUsers)
-        setConnectedUsers(updatedUsers.filter(user => user.nickName !== keycloak.tokenParsed?.given_name));
+        fetch(`http://localhost:8080/users`)
+            .then((response) => response.json())
+            .then((users) => {
+                const filteredUsers = users
+                    .filter((u) => u.id !== user.id)
+                    .map((u) => ({...u, lastMessage: 'bablabal'}));
+                setConnectedUsers(filteredUsers);
+            })
+            .catch((error) => {
+                console.error("Failed to fetch connected users", error);
+            });
     };
 
-    // ----
     const onMessageReceived = (payload) => {
-        const message = JSON.parse(payload.body);
+        const receivedMessage = JSON.parse(payload.body);
         const currentSelectedUser = selectedUserRef.current;
-        if (currentSelectedUser && currentSelectedUser.nickName === message.senderId) {
-            setMessages((prevMessages) => [...prevMessages, message]);
+
+        if (currentSelectedUser && currentSelectedUser.id === receivedMessage.senderId) {
+            setMessages((prevMessages) => [...prevMessages, receivedMessage]);
         }
     };
 
-    const handleUserPage = () => {
-        navigate('/user');
-    };
+    const handleAccountPage = useCallback(() => {
+        navigate('/me');
+    }, [navigate]);
+
+    const handleChange = useCallback((e) => {
+        setMessage(e.target.value);
+    }, []);
+
+    const handleSendMessage = useCallback(
+        (e) => {
+            e.preventDefault();
+            if (stompClient && message.trim()) {
+                const messageToSend = {
+                    senderId: user.id,
+                    recipientId: selectedUser.id,
+                    content: message.trim(),
+                    timestamp: new Date(),
+                };
+                stompClient.send(`/app/chat`, {}, JSON.stringify(messageToSend));
+                setMessages((prevMessages) => [
+                    ...prevMessages,
+                    {senderId: user.id, content: messageToSend.content},
+                ]);
+                setMessage('');
+            }
+        }, [stompClient, message, user, selectedUser]);
+
+    const handleKeyDown = useCallback(
+        (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSendMessage(e);
+            }
+        }, [handleSendMessage]);
 
     return (
         <div className="main">
             <div className="transition">
-                <button
-                    onClick={handleUserPage}
-                    className="user-button"
-                >
+                <button onClick={handleAccountPage} className="user-button">
                     Учетные данные
                 </button>
-                <ChatList connectedUsers={connectedUsers} setMessages={setMessages} setSelectedUser={setSelectedUser}/>
+                <ChatList
+                    connectedUsers={connectedUsers}
+                    setMessages={setMessages}
+                    setSelectedUser={setSelectedUser}
+                />
             </div>
 
             <div className="chat-container">
                 <Messages messages={messages}/>
 
                 <div className="input-container">
-                    <MessageInput
-                        message={message}
-                        setMessage={setMessage}
+                    <input
+                        type="text"
+                        value={message}
+                        onChange={handleChange}
+                        onKeyDown={handleKeyDown}
+                        className="message-input"
                     />
-                    <SendButton message={message} setMessage={setMessage} messages={messages} setMessages={setMessages}
-                                stompClient={stompClient} selectedUser={selectedUser}/>
+                    <button onClick={handleSendMessage} className="send-button">
+                        Отправить сообщение
+                    </button>
                 </div>
             </div>
         </div>
@@ -123,37 +151,3 @@ const ChatPage = () => {
 };
 
 export default ChatPage;
-
-/*const handleKeyDown = (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleSubmit();
-        }
-    };*/
-
-/*useEffect(() => {
-    const fetchMessages = async () => {
-        fetch('http://localhost:8080/messages', {
-            method: 'GET',
-            headers: {
-                Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
-            },
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error: ${response.statusText}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                setMessages(data);
-            })
-            .catch(error => {
-                console.error('Error fetching messages:', error);
-            });
-    };
-
-    if (keycloak.token) {
-        fetchMessages();
-    }
-}, [keycloak.token]);*/

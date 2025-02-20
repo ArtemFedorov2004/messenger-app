@@ -1,9 +1,9 @@
 import React from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useKeycloak} from "@react-keycloak/web";
-import './UserPage.css';
+import './AccountPage.css';
 
-const UserPage = () => {
+const AccountPage = () => {
     const {keycloak, authenticated} = useKeycloak();
     const navigate = useNavigate();
 
@@ -34,4 +34,4 @@ const UserPage = () => {
     );
 };
 
-export default UserPage;
+export default AccountPage;

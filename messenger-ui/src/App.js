@@ -1,28 +1,22 @@
 import React from 'react';
 import {BrowserRouter, Route, Routes} from "react-router-dom";
 import ChatPage from "./pages/chat/ChatPage";
-import UserPage from "./pages/account/UserPage";
-import {useKeycloak} from "@react-keycloak/web";
-import Main from "./pages/Main";
+import AccountPage from "./pages/account/AccountPage";
+import {useUser} from "./contexts/UserContext";
 
 
 function App() {
-    const {keycloak, initialized} = useKeycloak();
+    const {user} = useUser();
 
-    if (!keycloak) {
+    if (user == null) {
         return null;
-    }
-
-    if (keycloak.authenticated === false) {
-        keycloak.login();
     }
 
     return (
         <BrowserRouter>
             <Routes>
-                {/*<Route exact path="/" element={<Main/>}/>*/}
                 <Route exact path="/" element={<ChatPage/>}/>
-                <Route path="/user" element={<UserPage/>}/>
+                <Route path="/me" element={<AccountPage/>}/>
             </Routes>
         </BrowserRouter>
     );

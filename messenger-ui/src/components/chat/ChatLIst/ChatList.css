@@ -14,12 +14,12 @@
     cursor: pointer;
 }
 
-.chat-list li:hover {
-    background-color: #e0e0e0; /* Цвет фона при наведении */
+.chat-item.selected {
+    background-color: #037df6;
 }
 
-.chat-list li.selected {
-    background-color: #f0f0f0;
+.chat-item:hover {
+    background-color: #f1f1f1;
 }
 
 .chat-item {
@@ -42,15 +42,15 @@
 
 .chat-name {
     font-weight: bold;
-    white-space: nowrap; /* Запрещаем перенос текста */
-    overflow: hidden;    /* Скрываем текст, который не помещается */
-    text-overflow: ellipsis; /* Показываем многоточие, если текст не помещается */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .last-message {
     color: #555;
     font-size: 14px;
-    white-space: nowrap; /* Запрещаем перенос текста */
-    overflow: hidden;    /* Скрываем текст, который не помещается */
-    text-overflow: ellipsis; /* Показываем многоточие, если текст не помещается */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
