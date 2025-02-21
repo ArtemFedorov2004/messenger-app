@@ -127,11 +127,13 @@ const ChatPage = () => {
         }, [handleSendMessage]);
 
     return (
-        <div className="main">
-            <div className="transition">
-                <button onClick={handleAccountPage} className="user-button">
-                    Учетные данные
-                </button>
+        <div className="main-container">
+            <div className="left-container">
+                <div className="header">
+                    <div className="user-img">
+                        <img src="https://www.codewithfaraz.com/InstaPic.png" alt=""/>
+                    </div>
+                </div>
                 <ChatList
                     connectedUsers={connectedUsers}
                     setMessages={setMessages}
@@ -139,19 +141,33 @@ const ChatPage = () => {
                 />
             </div>
 
-            <div className="chat-container">
-                <Messages messages={messages}/>
-
-                <div className="input-container">
+            <div className="right-container">
+                <div className="header">
+                    <div className="img-text">
+                        <div className="user-img">
+                            <img
+                                src="https://images.pexels.com/photos/2474307/pexels-photo-2474307.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                                alt=""/>
+                        </div>
+                        <h4>Leo<br/><span>Online</span></h4>
+                    </div>
+                </div>
+                <div className="chat-container">
+                    <Messages messages={messages}/>
+                </div>
+                <div className="chatbox-input">
                     <input
                         type="text"
+                        placeholder="Type a message"
                         value={message}
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}
-                        className="message-input"
                     />
-                    <button onClick={handleSendMessage} className="send-button">
-                        Отправить сообщение
+                    <button
+                        className="send-button"
+                        onClick={handleSendMessage}
+                    >
+                        Отправить
                     </button>
                 </div>
             </div>

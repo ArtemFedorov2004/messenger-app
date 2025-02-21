@@ -10,7 +10,7 @@ const Messages = ({messages}) => {
     }, [messages]);
 
     return (
-        <div className="messages-container">
+        <div>
             {messages.map((msg, index) => (
                 <Message key={index} msg={msg}/>
             ))}

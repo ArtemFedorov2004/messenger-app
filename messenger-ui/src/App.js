@@ -8,10 +8,10 @@ import {useUser} from "./contexts/UserContext";
 function App() {
     const {user} = useUser();
 
-    if (user == null) {
+    /*if (user == null) {
         return null;
     }
-
+*/
     return (
         <BrowserRouter>
             <Routes>
