@@ -7,9 +7,10 @@ spring:
       port: 27017
       database: messenger
       authentication-database: admin
-#  security:
-#    oauth2:
-#      resourceserver:
-#        jwt:
-#          issuer-uri: "http://localhost:9090/realms/messenger"
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "http://localhost:9090/realms/messenger"
 allowed-origins: http://localhost:3000, http://localhost:9090
+

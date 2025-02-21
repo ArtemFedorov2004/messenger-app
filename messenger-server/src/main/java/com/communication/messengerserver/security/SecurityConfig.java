@@ -1,11 +1,11 @@
 package com.communication.messengerserver.security;
-/*
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -18,30 +18,30 @@ import java.util.List;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
-@RequiredArgsConstructor
 @EnableWebSecurity
 public class SecurityConfig {
-
-    private final KeycloakJwtTokenConverter keycloakJwtTokenConverter;
-
     @Value("${allowed-origins}")
     private List<String> allowedOrigins;
 
-    public SecurityConfig() {
+    @Bean
+    public KeycloakJwtTokenConverter keycloakJwtTokenConverter() {
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter
                 = new JwtGrantedAuthoritiesConverter();
 
-        this.keycloakJwtTokenConverter =
-                new KeycloakJwtTokenConverter(jwtGrantedAuthoritiesConverter);
+        return new KeycloakJwtTokenConverter(jwtGrantedAuthoritiesConverter);
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .cors(withDefaults())
-                .authorizeHttpRequests(customizer -> customizer.anyRequest().authenticated())
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(customizer -> customizer
+                                .requestMatchers("/ws/**").permitAll()
+                                .anyRequest().authenticated()
+                )
                 .oauth2ResourceServer(customizer -> customizer
-                        .jwt(jwtCustomizer -> jwtCustomizer.jwtAuthenticationConverter(keycloakJwtTokenConverter)))
+                        .jwt(jwtCustomizer -> jwtCustomizer.jwtAuthenticationConverter(keycloakJwtTokenConverter())))
                 .sessionManagement(customizer -> customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
     }
@@ -53,7 +53,8 @@ public class SecurityConfig {
         config.setAllowedOrigins(allowedOrigins);
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
+        config.setAllowCredentials(true);
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
-}*/
+}

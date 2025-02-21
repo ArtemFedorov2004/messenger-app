@@ -37,6 +37,5 @@ public class UserController {
     @GetMapping("/users")
     public ResponseEntity<List<User>> findConnectedUsers() {
         return ResponseEntity.ok(userService.findConnectedUsers());
-        //return ResponseEntity.ok(List.of(new User()));
     }
 }

@@ -14,7 +14,6 @@ public class UserService {
     public void saveUser(User user) {
         user.setStatus(Status.ONLINE);
         userRepository.save(user);
-        //userRepository.deleteAll();
     }
 
     public void disconnect(User user) {

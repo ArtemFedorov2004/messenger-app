@@ -39,25 +39,3 @@ const ChatList = ({connectedUsers, setMessages, setSelectedUser, selectedUser}) 
 };
 
 export default ChatList;
-
-/*const [chatList, setChatList] = useState([]);
-
-    useEffect(() => {
-        setChatList([
-            {
-                id: 1,
-                name: 'Александр фффффффффффффффффффффффффффффффффффффффффффффффффффф',
-                lastMessage: 'Привет, как дела?'
-            },
-            {
-                id: 2,
-                name: 'Мария',
-                lastMessage: 'Нужна помощь с проектом аааааааааааааааааааааааааааааааааааааааааааааааааааааааааааа'
-            },
-            {
-                id: 3,
-                name: 'Дмитрий',
-                lastMessage: 'Ты свободен сегодня?'
-            }
-        ]);
-    }, []);*/

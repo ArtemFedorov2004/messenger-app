@@ -6,6 +6,7 @@ import ChatList from "../../components/chat/ChatLIst/ChatList";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
 import {useUser} from "../../contexts/UserContext";
+import {useKeycloak} from "@react-keycloak/web";
 
 const ChatPage = () => {
     const [message, setMessage] = useState('');
@@ -24,11 +25,18 @@ const ChatPage = () => {
         selectedUserRef.current = selectedUser;
     }, [selectedUser]);
 
+    const {keycloak} = useKeycloak();
+
+    const headers = {
+        Authorization: `Bearer ${keycloak.token}`,
+    };
+
+
     const connectSocket = useCallback(() => {
         const socket = new SockJS(`http://localhost:8080/ws`);
         const client = Stomp.over(socket);
 
-        client.connect({}, () => {
+        client.connect(headers, () => {
             setStompClient(client);
             client.subscribe(`/user/${user.id}/queue/messages`, onMessageReceived);
             client.subscribe(`/user/public`, onUserConnect);
@@ -46,6 +54,7 @@ const ChatPage = () => {
 
         return () => {
             if (client && client.connected) {
+                fetch(`http://localhost:8080/users`);
                 client.disconnect();
             }
         };
