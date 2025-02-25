@@ -28,7 +28,7 @@ public class AuthService {
         }
         String lastname = String.valueOf(claims.get("family_name"));
 
-        String username = firstname + lastname;
+        String username = firstname + " " + lastname;
 
         if (!claims.containsKey("email")) {
             throw new RuntimeException("User claims do not contain the expected 'email'");

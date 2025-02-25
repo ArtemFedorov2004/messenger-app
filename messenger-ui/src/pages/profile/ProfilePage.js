@@ -1,46 +1,95 @@
-import React, {useState} from "react";
+import React, {useCallback, useState} from "react";
 import "./ProfilePage.css";
+import {useUser} from "../../contexts/UserContext";
+import {useNavigate} from "react-router-dom";
+import api from "../../api/api";
 
 const ProfilePage = () => {
-    const [user, setUser] = useState({
-        username: "lucky.jesse",
-        email: "jesse@example.com",
-        firstName: "Lucky",
-        lastName: "Jesse",
-        address: "Bld Mihail Kogalniceanu, nr. 8 Bl 1, Sc 1, Ap 09",
-        city: "New York",
-        country: "United States",
-        postalCode: "",
-        aboutMe: "A beautiful Dashboard for Bootstrap 4. It is Free and Open Source.",
+    const navigate = useNavigate();
+    const {user, setUser, logout} = useUser();
+    const [updatedUser, setUpdatedUser] = useState({
+        username: user?.username || '',
+        email: user?.email || '',
+        firstname: user?.firstname || '',
+        lastname: user?.lastname || '',
+        address: user?.address || '',
+        city: user?.city || '',
+        country: user?.country || '',
+        postalCode: user?.postalCode,
+        aboutMe: user?.aboutMe || '',
     });
 
     const handleInputChange = (e) => {
         const {name, value} = e.target;
-        setUser((prevUser) => ({
-            ...prevUser,
+        setUpdatedUser((prev) => ({
+            ...prev,
             [name]: value,
         }));
     };
+
+    const hasChanges = () => {
+        return updatedUser.username !== user.username ||
+            updatedUser.email !== user.email ||
+            updatedUser.firstname !== user.firstname ||
+            updatedUser.lastname !== user.lastname ||
+            updatedUser.address !== user.address ||
+            updatedUser.city !== user.city ||
+            updatedUser.country !== user.country ||
+            updatedUser.postalCode !== user.postalCode ||
+            updatedUser.aboutMe !== user.aboutMe;
+    };
+
+    const handleSaveChanges = () => {
+        if (!hasChanges()) {
+            return;
+        }
+
+        api.put(`/users/${user.id}`, updatedUser)
+            .then(response => {
+                if (response.status === 204) {
+                    setUser({
+                        ...user,
+                        ...updatedUser
+                    });
+                }
+            })
+            .catch(err => console.error(err))
+    };
+
+    const handleReturnToChat = useCallback(() => {
+        navigate('/');
+    }, [navigate]);
+
+    const handleLogout = (e) => {
+        logout();
+    }
 
     return (
         <div className="container">
             <div className="left-container">
                 <div className="card-body">
                     <h3>Мой аккаунт</h3>
-                    <button className="btn btn-edit">Редактировать</button>
+                    <button
+                        className="btn btn-edit"
+                        onClick={handleSaveChanges}
+                    >
+                        Редактировать
+                    </button>
                     <form>
                         <h6 className="heading-small text-muted mb-4">Информация о пользователе</h6>
                         <div>
                             <div className="col">
                                 <div className="focused">
-                                    <label className="form-control-label" htmlFor="input-username">Отображаемое имя</label>
+                                    <label className="form-control-label" htmlFor="input-username">
+                                        Отображаемое имя
+                                    </label>
                                     <input
                                         type="text"
                                         id="input-username"
                                         className="form-control form-control-alternative"
                                         placeholder="Отображаемое имя"
                                         name="username"
-                                        value={user.username}
+                                        value={updatedUser.username}
                                         onChange={handleInputChange}
                                     />
                                 </div>
@@ -53,7 +102,7 @@ const ProfilePage = () => {
                                     className="form-control form-control-alternative"
                                     placeholder="jesse@example.com"
                                     name="email"
-                                    value={user.email}
+                                    value={updatedUser.email}
                                     onChange={handleInputChange}
                                 />
                             </div>
@@ -68,8 +117,8 @@ const ProfilePage = () => {
                                             id="input-first-name"
                                             className="form-control form-control-alternative"
                                             placeholder="Имя"
-                                            name="firstName"
-                                            value={user.firstName}
+                                            name="firstname"
+                                            value={updatedUser.firstname}
                                             onChange={handleInputChange}
                                         />
                                     </div>
@@ -84,8 +133,8 @@ const ProfilePage = () => {
                                             id="input-last-name"
                                             className="form-control form-control-alternative"
                                             placeholder="Фамилия"
-                                            name="lastName"
-                                            value={user.lastName}
+                                            name="lastname"
+                                            value={updatedUser.lastname}
                                             onChange={handleInputChange}
                                         />
                                     </div>
@@ -103,7 +152,7 @@ const ProfilePage = () => {
                                         className="form-control form-control-alternative"
                                         placeholder="Адрес"
                                         name="address"
-                                        value={user.address}
+                                        value={updatedUser.address}
                                         onChange={handleInputChange}
                                         type="text"
                                     />
@@ -119,7 +168,7 @@ const ProfilePage = () => {
                                             className="form-control form-control-alternative"
                                             placeholder="Город"
                                             name="city"
-                                            value={user.city}
+                                            value={updatedUser.city}
                                             onChange={handleInputChange}
                                         />
                                     </div>
@@ -133,7 +182,7 @@ const ProfilePage = () => {
                                             className="form-control form-control-alternative"
                                             placeholder="Страна"
                                             name="country"
-                                            value={user.country}
+                                            value={updatedUser.country}
                                             onChange={handleInputChange}
                                         />
                                     </div>
@@ -148,7 +197,7 @@ const ProfilePage = () => {
                                         className="form-control form-control-alternative"
                                         placeholder="Почтовый индекс"
                                         name="postalCode"
-                                        value={user.postalCode}
+                                        value={updatedUser.postalCode}
                                         onChange={handleInputChange}
                                     />
                                 </div>
@@ -163,7 +212,7 @@ const ProfilePage = () => {
                                 className="form-control form-control-alternative"
                                 placeholder="Несколько слов о тебе ..."
                                 name="aboutMe"
-                                value={user.aboutMe}
+                                value={updatedUser.aboutMe}
                                 onChange={handleInputChange}
                             />
                         </div>
@@ -181,8 +230,18 @@ const ProfilePage = () => {
                     </div>
                     <div style={{display: "flex"}}>
                         <button className="btn btn-info">Изменить аватар</button>
-                        <button className="btn btn-info">Вернуться в чат</button>
-                        <button className="btn btn-default">Выйти</button>
+                        <button
+                            className="btn btn-info"
+                            onClick={handleReturnToChat}
+                        >
+                            Вернуться в чат
+                        </button>
+                        <button
+                            className="btn btn-default"
+                            onClick={handleLogout}
+                        >
+                            Выйти
+                        </button>
                     </div>
                 </div>
             </div>
