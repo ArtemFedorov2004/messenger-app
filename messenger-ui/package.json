@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@react-keycloak/web": "^3.4.0",
+    "axios": "^1.7.9",
     "cra-template": "1.2.0",
     "keycloak-js": "^26.1.1",
     "net": "^1.0.2",
