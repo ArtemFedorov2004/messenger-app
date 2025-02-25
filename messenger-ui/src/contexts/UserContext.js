@@ -1,5 +1,6 @@
 import React, {createContext, useContext, useEffect, useState} from 'react';
 import {useKeycloak} from "@react-keycloak/web";
+import api from "../api/api";
 
 const UserContext = createContext();
 
@@ -11,18 +12,15 @@ export const UserProvider = ({children}) => {
     useEffect(() => {
         if (initialized) {
             if (keycloak.authenticated) {
-                const fetchUserData = async () => {
-                    const userData = keycloak.tokenParsed;
-                    const user = {
-                        id: userData?.sub,
-                        email: userData?.email,
-                        firstname: userData?.given_name,
-                        lastname: userData?.family_name
-                    };
-                    setUser(user);
-                };
+                localStorage.setItem('access_token', keycloak.token);
 
-                fetchUserData();
+                api.get("/login")
+                    .then(response => response.data)
+                    .then(user => setUser(user))
+                    .catch(err => {
+                        console.error('Error fetching user data:', err);
+                    })
+
             } else {
                 keycloak.login();
             }
