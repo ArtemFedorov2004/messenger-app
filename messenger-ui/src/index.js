@@ -5,11 +5,14 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import keycloak from "./keycloak/keycloak";
 import {ReactKeycloakProvider} from "@react-keycloak/web";
+import {UserProvider} from "./contexts/UserContext";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <ReactKeycloakProvider authClient={keycloak}>
-        <App/>
+        <UserProvider>
+            <App/>
+        </UserProvider>
     </ReactKeycloakProvider>
 );
 

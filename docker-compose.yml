@@ -18,3 +18,15 @@ services:
       - --import-realm
     volumes:
       - ./keycloak/realm/messenger.json:/opt/keycloak/data/import/messenger.json
+  mongodb:
+    image: mongo
+    container_name: mongo_db
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo:/data
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=artem
+      - MONGO_INITDB_ROOT_PASSWORD=q
+volumes:
+  mongo: {}

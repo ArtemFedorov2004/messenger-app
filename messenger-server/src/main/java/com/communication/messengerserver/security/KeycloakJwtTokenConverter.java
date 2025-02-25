@@ -1,5 +1,4 @@
 package com.communication.messengerserver.security;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 
 @RequiredArgsConstructor
 public class KeycloakJwtTokenConverter implements Converter<Jwt, JwtAuthenticationToken> {
