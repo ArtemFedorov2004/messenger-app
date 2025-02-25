@@ -1,30 +1,39 @@
 package com.communication.messengerserver.user;
 
+import com.communication.messengerserver.common.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Optional;
 
-@Service
 @RequiredArgsConstructor
+@Service
 public class UserService {
 
     private final UserRepository userRepository;
 
-    public void saveUser(User user) {
-        user.setStatus(Status.ONLINE);
-        userRepository.save(user);
-    }
+    public void editUser(String userId, User userToEdit) {
+        Optional<User> existingUserOptional = userRepository.findById(userId);
 
-    public void disconnect(User user) {
-        var storedUser = userRepository.findById(user.getId()).orElse(null);
-        if (storedUser != null) {
-            storedUser.setStatus(Status.OFFLINE);
-            userRepository.save(storedUser);
+        if (existingUserOptional.isPresent()) {
+            User existingUser = existingUserOptional.get();
+
+            existingUser.setUsername(userToEdit.getUsername());
+            existingUser.setFirstname(userToEdit.getFirstname());
+            existingUser.setLastname(userToEdit.getLastname());
+            existingUser.setEmail(userToEdit.getEmail());
+            existingUser.setAddress(userToEdit.getAddress());
+            existingUser.setCity(userToEdit.getCity());
+            existingUser.setCountry(userToEdit.getCountry());
+            existingUser.setPostalCode(userToEdit.getPostalCode());
+            existingUser.setAboutMe(userToEdit.getAboutMe());
+
+            userRepository.save(existingUser);
         }
     }
 
-    public List<User> findConnectedUsers() {
-        return userRepository.findAllByStatus(Status.ONLINE);
+    public User getUserById(String userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + userId + " does not exist"));
     }
 }

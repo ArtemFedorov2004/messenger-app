@@ -1,41 +1,34 @@
 package com.communication.messengerserver.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-@Controller
+@RestController
+@RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
-    @MessageMapping("/user.addUser")
-    @SendTo("/user/public")
-    public User addUser(
-            @Payload User user
-    ) {
-        userService.saveUser(user);
-        return user;
-    }
+    @PutMapping("/{userId}")
+    public ResponseEntity<?> editUser(
+            @PathVariable String userId,
+            @RequestBody User userToEdit,
+            @AuthenticationPrincipal Jwt jwt
+            ) {
+        String userIdFromSubject = jwt.getSubject();
 
-    @MessageMapping("/user.disconnectUser")
-    @SendTo("/user/public")
-    public User disconnectUser(
-            @Payload User user
-    ) {
-        userService.disconnect(user);
-        return user;
-    }
+        if (!userIdFromSubject.equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
-    @GetMapping("/users")
-    public ResponseEntity<List<User>> findConnectedUsers() {
-        return ResponseEntity.ok(userService.findConnectedUsers());
+        userService.editUser(userIdFromSubject, userToEdit);
+
+        return ResponseEntity.noContent()
+                .build();
     }
 }
