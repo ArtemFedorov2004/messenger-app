@@ -4,7 +4,9 @@ import com.communication.messengerserver.common.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -35,5 +37,13 @@ public class UserService {
     public User getUserById(String userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User with id " + userId + " does not exist"));
+    }
+
+    public List<User> searchUsersByQuery(String userId, String query) {
+        List<User> users = userRepository.findByUsernameIgnoreCaseContaining(query);
+
+        return users.stream()
+                .filter(user -> !user.getId().equals(userId))
+                .collect(Collectors.toList());
     }
 }
