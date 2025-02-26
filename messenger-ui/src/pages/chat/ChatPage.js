@@ -8,12 +8,15 @@ import Stomp from "stompjs";
 import {useUser} from "../../contexts/UserContext";
 import {useKeycloak} from "@react-keycloak/web";
 import api from "../../api/api";
+import Search from "../../components/chat/Search/Search";
+
 
 const ChatPage = () => {
     const [chats, setChats] = useState(new Map());
     const [selectedChatId, setSelectedChatId] = useState('');
     const [newMessages, setNewMessages] = useState(new Map());
     const [stompClient, setStompClient] = useState(null);
+    const [showSearchSection, setShowSearchSection] = useState(true);
 
     const navigate = useNavigate();
 
@@ -164,10 +167,16 @@ const ChatPage = () => {
                         <img src="https://www.codewithfaraz.com/InstaPic.png" alt=""/>
                     </div>
                 </div>
-                <ChatList
-                    chats={chats}
-                    setSelectedChatId={setSelectedChatId}
+                <Search
+                    showSearchSection={showSearchSection}
+                    setShowSearchSection={setShowSearchSection}
                 />
+                {!showSearchSection ? (
+                    <ChatList
+                        chats={chats}
+                        setSelectedChatId={setSelectedChatId}
+                    />
+                ) : null}
             </div>
 
             <div className="right-container">
