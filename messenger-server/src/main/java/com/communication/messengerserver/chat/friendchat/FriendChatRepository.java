@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -36,5 +37,15 @@ public class FriendChatRepository {
         FriendChat friendChat = mongoTemplate.findOne(query, FriendChat.class);
 
         return Optional.ofNullable(friendChat);
+    }
+
+    public void addMessageIdToChat(String messageId, List<String> participantIds) {
+        Criteria criteria = Criteria.where("participantIds").all(participantIds);
+        Query query = new Query(criteria);
+
+        Update update = new Update();
+        update.addToSet("messageIds", messageId);
+
+        mongoTemplate.updateFirst(query, update, FriendChat.class);
     }
 }

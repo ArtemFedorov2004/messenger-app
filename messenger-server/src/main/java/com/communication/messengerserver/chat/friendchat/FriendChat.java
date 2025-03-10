@@ -30,4 +30,8 @@ public class FriendChat {
 
         this.participantIds = participantIds;
     }
+
+    public void addMessageId(String messageId) {
+        this.messageIds.add(messageId);
+    }
 }

@@ -92,6 +92,8 @@ public class FriendChatService {
 
     public FriendMessage saveAndSendMessage(FriendMessage message, String recipientId) {
         FriendMessage savedMessage = friendMessageService.saveMessage(message);
+        friendChatRepository.addMessageIdToChat(savedMessage.getId(),
+                List.of(savedMessage.getSenderId(), recipientId));
 
         messagingTemplate.convertAndSendToUser(
                 recipientId,
