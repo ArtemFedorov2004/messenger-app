@@ -1,4 +1,4 @@
-import React, {createContext, useContext, useEffect, useState} from 'react';
+import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
 import {useKeycloak} from "@react-keycloak/web";
 import api from "../api/api";
 
@@ -27,10 +27,11 @@ export const UserProvider = ({children}) => {
         }
     }, [initialized, keycloak.authenticated]);
 
-    const logout = () => {
+    const logout = useCallback(() => {
         setUser(null);
+        localStorage.removeItem('access_token');
         keycloak.logout();
-    };
+    }, [keycloak]);
 
     return (
         <UserContext.Provider value={{user, setUser, logout}}>
