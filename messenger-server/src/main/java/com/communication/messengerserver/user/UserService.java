@@ -34,16 +34,16 @@ public class UserService {
         }
     }
 
-    public User getUserById(String userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User with id " + userId + " does not exist"));
-    }
-
     public List<User> searchUsersByQuery(String userId, String query) {
         List<User> users = userRepository.findByUsernameIgnoreCaseContaining(query);
 
         return users.stream()
                 .filter(user -> !user.getId().equals(userId))
                 .collect(Collectors.toList());
+    }
+
+    public String getUsernameById(String userId) {
+        return userRepository.getUsernameById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + userId + " does not exist"));
     }
 }

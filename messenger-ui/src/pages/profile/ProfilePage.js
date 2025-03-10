@@ -223,7 +223,7 @@ const ProfilePage = () => {
                 <div className="card-profile shadow">
                     <div className="card-profile-image">
                         <img
-                            src="https://demos.creative-tim.com/argon-dashboard/assets-old/img/theme/team-4.jpg"
+                            src="/logo512.png"
                             className="rounded-circle"
                             alt="Profile"
                         />

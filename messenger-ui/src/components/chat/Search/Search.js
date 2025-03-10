@@ -4,7 +4,13 @@ import './Search.css'
 import api from "../../../api/api";
 
 
-const Search = ({showSearchSection, setShowSearchSection}) => {
+const Search = ({
+                    friendChats,
+                    updateFriendChatInMap,
+                    selectFriendChatById,
+                    showSearchSection,
+                    setShowSearchSection
+                }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [foundUsers, setFoundUsers] = useState([]);
 
@@ -46,6 +52,26 @@ const Search = ({showSearchSection, setShowSearchSection}) => {
         setShowSearchSection(false);
     };
 
+    const hasChatWithFriend = (friendId) => {
+        return friendChats.has(friendId);
+    };
+
+    const selectUser = (user) => {
+        if (!hasChatWithFriend(user.id)) {
+            const newChat = {
+                isNew: true,
+                friendId: user.id,
+                friendName: user.username,
+                messages: [],
+                newMessage: ''
+            }
+            updateFriendChatInMap(newChat);
+        }
+        selectFriendChatById(user.id);
+        setSearchTerm('');
+        setShowSearchSection(false);
+    }
+
     return (
         <div>
             <div className="search-bar-container">
@@ -60,7 +86,7 @@ const Search = ({showSearchSection, setShowSearchSection}) => {
                 <input
                     type="text"
                     className="search-input"
-                    placeholder="Search chats..."
+                    placeholder="Найти пользователей..."
                     value={searchTerm}
                     onFocus={handleInputFocus}
                     onChange={handleInputChange}
@@ -71,10 +97,14 @@ const Search = ({showSearchSection, setShowSearchSection}) => {
                 <div className="search-list">
                     {foundUsers.length > 0 ? (
                         foundUsers.map(user => (
-                            <div key={user.id} className="search-box">
+                            <div
+                                key={user.id}
+                                onClick={() => selectUser(user)}
+                                className="search-box"
+                            >
                                 <div className="img-box">
                                     <img
-                                        src="https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                                        src="/logo512.png"
                                         alt={user.username}/>
                                 </div>
                                 <h4 className="username">{user.username}</h4>
