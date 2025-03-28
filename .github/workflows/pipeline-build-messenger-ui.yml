@@ -27,15 +27,31 @@ jobs:
 #      - name: build
 #        run: npm run build
       - name: Copy files to VPS
+        run: sudo apt-get install rsync
+
+      - name: Deploy theme on server
+        id: deploy_theme
+        uses: Pendect/action-rsyncer@v1.1.0
         env:
-          SSH_PRIVATE_KEY: ${{secrets.VPS_PRIVATE_KEY}}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
-          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}
-#        with:
+          DEPLOY_KEY: ${{secrets.VPS_SECRET_KEY}}
+        with:
+          flags: '-avc --delete'
+          src: 'build/'
+          dest: 'root@"${{secrets.VPS_IP}}":/root'
+
+      - name: Display status from deploy
+        run: echo "${{ steps.deploy.outputs.status }}"
+
+#      - name: Copy files to VPS
+#        env:
+#          SSH_PRIVATE_KEY: ${{secrets.VPS_PRIVATE_KEY}}
+#        run: |
+#          mkdir -p ~/.ssh
+#          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+#          chmod 600 ~/.ssh/id_rsa
+#          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
+#          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}
+##        with:
 #          flags: '-avc --delete'
 #          src: 'dist/'
 #          dest: 'root@"${{secrets.SERVER_IP}}":/path/on/remote'
