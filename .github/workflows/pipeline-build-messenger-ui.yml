@@ -26,21 +26,8 @@ jobs:
 #
 #      - name: build
 #        run: npm run build
-      - name: Copy files to VPS
-        run: sudo apt-get install rsync
-
-      - name: Deploy theme on server
-        id: deploy_theme
-        uses: Pendect/action-rsyncer@v1.1.0
-        env:
-          DEPLOY_KEY: ${{secrets.VPS_SECRET_KEY}}
-        with:
-          flags: '-avc --delete'
-          src: 'build/'
-          dest: 'root@"${{secrets.VPS_IP}}":/root'
-
-      - name: Display status from deploy
-        run: echo "${{ steps.deploy.outputs.status }}"
+      - name: build
+        run: ssh -i ${{secrets.VPS_PRIVATE_KEY}} ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}
 
 #      - name: Copy files to VPS
 #        env:
