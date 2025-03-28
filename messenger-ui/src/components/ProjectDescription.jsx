@@ -20,13 +20,13 @@ const ProjectDescription = () => {
             </ul>
 
             <p>
-                Исходный код проекта на <a href="https://github.com/ArtemFedorov2004/messenger-app"
-                                           target="_blank">GitHub</a>.
+                Исходный код проекта на <a href="https://github.com/ArtemFedorov2004/messenger-app" target="_blank"
+                                           rel="noopener noreferrer">GitHub</a>.
             </p>
 
             <p>
-                Для обратной связи пишите на почту: <a
-                href="https://e.mail.ru/" target="_blank">artem20.fedorov00@mail.ru</a>
+                Для обратной связи пишите на почту: <a href="https://e.mail.ru/" target="_blank"
+                                                       rel="noopener noreferrer">>artem20.fedorov00@mail.ru</a>
             </p>
         </Col>
     );
