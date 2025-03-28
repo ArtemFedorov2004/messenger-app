@@ -1,0 +1,30 @@
+name: build messenger ui
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths:
+      - messenger-ui/**
+      - 'docker-compose.yml'
+      - .github/workflows/*-messenger-ui.yml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./messenger-ui
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: build
+        run: npm run build
