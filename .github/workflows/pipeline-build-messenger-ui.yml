@@ -27,7 +27,7 @@ jobs:
 #      - name: build
 #        run: npm run build
       - name: build
-        run: ssh -i ${{secrets.VPS_PRIVATE_KEY}} ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}
+        run: ssh ${{secrets.VPS_PRIVATE_KEY}} ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}
 
 #      - name: Copy files to VPS
 #        env:
