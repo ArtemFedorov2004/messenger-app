@@ -1,8 +1,8 @@
 name: build messenger ui
 
 on:
-  pull_request:
-    branches: [ master ]
+  push:
+    branches: [ refactor-messenger-ui ]
     paths:
       - messenger-ui/**
       - 'docker-compose.yml'
@@ -26,9 +26,18 @@ jobs:
 #
 #      - name: build
 #        run: npm run build
-
-      - name: DELETE ME
+      - name: Copy files to VPS
+        env:
+          SSH_PRIVATE_KEY: ${{secrets.VPS_PRIVATE_KEY}}
         run: |
-          ssh -oStrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} ${{ secrets.VPS_USER_PASSWORD }}<<EOF
-          mkdir -p messenger-app
-          EOF
+          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}
+#        with:
+#          flags: '-avc --delete'
+#          src: 'dist/'
+#          dest: 'root@"${{secrets.SERVER_IP}}":/path/on/remote'
+
+#      - name: DELETE ME
+#        run: |
+#          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} <<EOF
+#          mkdir -p messenger-app
+#          EOF
