@@ -26,14 +26,34 @@ jobs:
 #
 #      - name: build
 #        run: npm run build
-      - name: Copy files to VPS
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.VPS_PRIVATE_KEY }}
+
+      - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.VPS_IP}} >> ~/.ssh/known_hosts
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_PRIVATE_KEY }}
+
+      - name: Add SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to VPS
+        run: |
+           ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} << 'EOF'
+            mkdir -p working
+           EOF
+#      - name: Copy files to VPS
+#        env:
+#          SSH_PRIVATE_KEY: ${{ secrets.VPS_PRIVATE_KEY }}
+#        run: |
+#          mkdir -p ~/.ssh
+#          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+#          chmod 600 ~/.ssh/id_rsa
+#          ssh-keyscan -H ${{ secrets.VPS_IP}} >> ~/.ssh/known_hosts
+#          rsync -avz --delete ./ <user>@<VPS_IP>:/var/www/html/
 
 # rsync -avz --delete ./ <user>@<VPS_IP>:/var/www/html/
 #      - name: Copy files to VPS
