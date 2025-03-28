@@ -17,61 +17,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-#
-#      - name: Set up Node.js
-#        uses: actions/setup-node@v1
-#
-#      - name: Install dependencies
-#        run: npm install
-#
-#      - name: build
-#        run: npm run build
 
-      - name: Set up SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.VPS_PRIVATE_KEY }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
 
-      - name: Add SSH known hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
+      - name: Install dependencies
+        run: npm install
 
-      - name: Deploy to VPS
-        run: |
-           ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} << 'EOF'
-            mkdir -p working
-           EOF
-#      - name: Copy files to VPS
-#        env:
-#          SSH_PRIVATE_KEY: ${{ secrets.VPS_PRIVATE_KEY }}
-#        run: |
-#          mkdir -p ~/.ssh
-#          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-#          chmod 600 ~/.ssh/id_rsa
-#          ssh-keyscan -H ${{ secrets.VPS_IP}} >> ~/.ssh/known_hosts
-#          rsync -avz --delete ./ <user>@<VPS_IP>:/var/www/html/
-
-# rsync -avz --delete ./ <user>@<VPS_IP>:/var/www/html/
-#      - name: Copy files to VPS
-#        env:
-#          SSH_PRIVATE_KEY: ${{secrets.VPS_PRIVATE_KEY}}
-#        run: |
-#          mkdir -p ~/.ssh
-#          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-#          chmod 600 ~/.ssh/id_rsa
-#          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
-#          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}
-##        with:
-#          flags: '-avc --delete'
-#          src: 'dist/'
-#          dest: 'root@"${{secrets.SERVER_IP}}":/path/on/remote'
-
-#      - name: DELETE ME
-#        run: |
-#          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} <<EOF
-#          mkdir -p messenger-app
-#          EOF
+      - name: build
+        run: npm run build

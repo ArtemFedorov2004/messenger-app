@@ -12,14 +12,10 @@ services:
       - messenger-network
 
   messenger-ui:
+    image: artem20fedorov00/messenger-ui
     container_name: messenger-ui
-    build:
-      context: ./messenger-ui
     networks:
       - messenger-network
 
 networks:
   messenger-network:
-
-volumes:
-  mongo: {}
