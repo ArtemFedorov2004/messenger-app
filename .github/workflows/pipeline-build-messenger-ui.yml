@@ -1,8 +1,8 @@
 name: build messenger ui
 
 on:
-  push:
-    branches: [ refactor-messenger-ui ]
+  pull-request:
+    branches: [ master ]
     paths:
       - messenger-ui/**
       - 'docker-compose.yml'
