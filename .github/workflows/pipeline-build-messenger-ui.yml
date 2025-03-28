@@ -17,9 +17,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+#
+#      - name: Set up Node.js
+#        uses: actions/setup-node@v1
+#
+#      - name: Install dependencies
+#        run: npm install
+#
+#      - name: build
+#        run: npm run build
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v1
-
-      - name: Install dependencies
-        run: npm install
+      - name: DELETE ME
+        run: |
+          ssh -oStrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} ${{ secrets.VPS_USER_PASSWORD }}<<EOF
+          mkdir -p messenger-app
+          EOF
