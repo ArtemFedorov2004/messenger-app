@@ -63,6 +63,9 @@ jobs:
       - name: Copy docker-compose file
         run: scp docker-compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/docker-compose.yml
 
+      - name: Copy nginx.conf file
+        run: scp nginx.conf ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/nginx.conf
+
       - name: Deploy to VPS
         run: |
           ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} << 'EOF'

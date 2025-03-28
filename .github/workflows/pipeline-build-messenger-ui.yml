@@ -1,7 +1,7 @@
 name: build messenger ui
 
 on:
-  pull-request:
+  pull_request:
     branches: [ master ]
     paths:
       - messenger-ui/**
