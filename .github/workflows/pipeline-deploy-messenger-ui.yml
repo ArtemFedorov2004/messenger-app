@@ -38,18 +38,26 @@ jobs:
 
   deploy:
     name: Deploy
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: [ build-image ]
     steps:
       - name: Create deployment folder
-        run: ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} "mkdir -p messenger-app"
+        run: |
+          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} <<EOF
+          ${{ secrets.VPS_USER_PASSWORD }}
+          mkdir -p messenger-app
+          EOF
 
       - name: Copy docker-compose file
-        run: scp -oStrictHostKeyChecking=no docker-compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/docker-compose.yml
+        run: |
+          scp -oStrictHostKeyChecking=no docker-compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/docker-compose.yml <<EOF
+          ${{ secrets.VPS_USER_PASSWORD }}
+          EOF
 
       - name: deploy
         run: |
           ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} <<EOF
+          ${{ secrets.VPS_USER_PASSWORD }}
           cd messenger-app
           docker compose -f docker-compose.yml pull -q
           docker compose -f docker-compose.yml up -d
