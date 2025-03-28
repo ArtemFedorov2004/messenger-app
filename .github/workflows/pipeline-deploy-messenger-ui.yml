@@ -43,7 +43,7 @@ jobs:
     steps:
       - name: Create deployment folder
         run: |
-          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} <<EOF
+          ssh -oStrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} <<EOF
           ${{ secrets.VPS_USER_PASSWORD }}
           mkdir -p messenger-app
           EOF
@@ -56,7 +56,7 @@ jobs:
 
       - name: deploy
         run: |
-          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} <<EOF
+          ssh -oStrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} <<EOF
           ${{ secrets.VPS_USER_PASSWORD }}
           cd messenger-app
           docker compose -f docker-compose.yml pull -q
