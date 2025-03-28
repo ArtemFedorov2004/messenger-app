@@ -1,0 +1,56 @@
+name: deploy messenger ui
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - messenger-ui/**
+      - 'docker-compose.yml'
+      - .github/workflows/*-messenger-ui.yml
+jobs:
+  build-image:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Extract project version
+        id: extract_version
+        run: |
+          cd messenger-ui
+          echo "VERSION=$(jq -r '.version' package.json)" >> $GITHUB_OUTPUT
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push to DockerHub
+        uses: docker/build-push-action@v5
+        with:
+          context: messenger-ui
+          file: messenger-ui/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/messenger-ui:latest,${{ secrets.DOCKERHUB_USERNAME }}/messenger-ui:${{ steps.extract_version.outputs.VERSION }}
+
+  deploy:
+    name: Deploy
+    runs-on: self-hosted
+    needs: [ build-image ]
+    steps:
+      - name: Create deployment folder
+        run: ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} "mkdir -p messenger-app"
+
+      - name: Copy docker-compose file
+        run: scp -oStrictHostKeyChecking=no docker-compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/docker-compose.yml
+
+      - name: deploy
+        run: |
+          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} <<EOF
+          cd messenger-app
+          docker compose -f docker-compose.yml pull -q
+          docker compose -f docker-compose.yml up -d
+          EOF
