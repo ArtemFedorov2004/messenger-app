@@ -17,3 +17,10 @@ export const publicRoutes = [
         Component: <Registration/>
     }
 ]
+
+export const privateRoutes = [
+    {
+        path: HOME_ROUTE,
+        Component: <Home/>
+    }
+]
