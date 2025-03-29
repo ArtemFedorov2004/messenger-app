@@ -2,11 +2,11 @@ import React from 'react';
 import Navbar from "../components/Navbar";
 import ProjectDescription from "../components/ProjectDescription";
 import StackLogosCarousel from "../components/StackLogosCarousel";
-import {Row, Layout} from "antd";
+import {Layout, Row} from "antd";
 
 const Home = () => {
     return (
-        <>
+        <Layout className="h100">
             <Navbar/>
             <Layout.Content>
                 <Row justify="space-around" align="middle" style={{marginTop: "100px"}}>
@@ -14,7 +14,7 @@ const Home = () => {
                     <StackLogosCarousel/>
                 </Row>
             </Layout.Content>
-        </>
+        </Layout>
     );
 };
 

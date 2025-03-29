@@ -1,7 +1,11 @@
 import React from 'react';
-import {Layout, Button, Menu} from "antd";
+import {Button, Layout, Menu} from "antd";
+import {useNavigate} from "react-router-dom";
+import {LOGIN_ROUTE} from "../utils/consts";
 
 const Navbar = () => {
+    const navigate = useNavigate();
+
     return (
         <Layout.Header>
             <Menu
@@ -13,7 +17,7 @@ const Navbar = () => {
                 <Menu.Item
                     key={1}
                 >
-                    <Button>Войти</Button>
+                    <Button onClick={() => navigate(LOGIN_ROUTE)}>Войти</Button>
                 </Menu.Item>
             </Menu>
         </Layout.Header>

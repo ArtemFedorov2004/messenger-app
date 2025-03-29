@@ -1,14 +1,14 @@
 import React from 'react';
-import {Layout} from "antd";
 import './App.css';
-import Home from "./pages/Home";
+import {BrowserRouter as Router} from "react-router-dom";
+import AppRouter from "./components/AppRouter";
 
 const App = () => {
 
     return (
-        <Layout className="h100">
-            <Home/>
-        </Layout>
+        <Router>
+            <AppRouter/>
+        </Router>
     );
 };
 
