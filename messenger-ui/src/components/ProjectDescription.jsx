@@ -26,7 +26,7 @@ const ProjectDescription = () => {
 
             <p>
                 Для обратной связи пишите на почту: <a href="https://e.mail.ru/" target="_blank"
-                                                       rel="noopener noreferrer">>artem20.fedorov00@mail.ru</a>
+                                                       rel="noopener noreferrer">artem20.fedorov00@mail.ru</a>
             </p>
         </Col>
     );
