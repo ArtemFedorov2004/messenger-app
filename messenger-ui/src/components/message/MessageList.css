@@ -1,0 +1,5 @@
+.message-list {
+    height: calc(100vh - 104px);
+    padding: 20px;
+    overflow-y: scroll;
+}
