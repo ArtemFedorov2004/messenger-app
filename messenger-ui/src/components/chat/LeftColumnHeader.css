@@ -1,0 +1,9 @@
+.left-column-header {
+    height: 55px;
+    display: flex;
+    align-items: center;
+}
+
+.search {
+    margin-left: 20px;
+}

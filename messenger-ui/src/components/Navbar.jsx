@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import {Button, Layout, Menu} from "antd";
 import {useNavigate} from "react-router-dom";
-import {LOGIN_ROUTE} from "../utils/consts";
+import {CHAT_ROUTE, LOGIN_ROUTE} from "../utils/consts";
 import {observer} from "mobx-react-lite";
 import {Context} from "../index";
 
@@ -31,6 +31,11 @@ const Navbar = observer(() => {
                         </Menu.Item>
                         <Menu.Item
                             key={2}
+                        >
+                            <Button onClick={() => navigate(CHAT_ROUTE)}>Перейти в чат</Button>
+                        </Menu.Item>
+                        <Menu.Item
+                            key={3}
                         >
                             <Button onClick={() => logout()}>Выйти</Button>
                         </Menu.Item>
