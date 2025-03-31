@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import {Navigate, Route, Routes} from "react-router-dom";
 import {privateRoutes, publicRoutes} from "../routes";
-import {HOME_ROUTE, LOGIN_ROUTE} from "../utils/consts";
+import {CHAT_ROUTE, LOGIN_ROUTE} from "../utils/consts";
 import {observer} from "mobx-react-lite";
 import {Context} from "../index";
 
@@ -17,7 +17,7 @@ const AppRouter = observer(() => {
                 )}
                 <Route
                     path="*"
-                    element={<Navigate to={HOME_ROUTE} replace/>}
+                    element={<Navigate to={CHAT_ROUTE} replace/>}
                 />
             </Routes>
             :
