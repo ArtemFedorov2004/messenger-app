@@ -24,7 +24,7 @@ const Chat = observer(() => {
                     content: ''
                 })))
         });
-    }, []);
+    }, [chat]);
 
     return (
         <Layout className="h100">
