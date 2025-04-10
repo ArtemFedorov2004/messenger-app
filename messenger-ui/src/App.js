@@ -1,25 +1,15 @@
 import React from 'react';
-import {BrowserRouter, Route, Routes} from "react-router-dom";
-import ChatPage from "./pages/chat/ChatPage";
-import {useUser} from "./contexts/UserContext";
-import ProfilePage from "./pages/profile/ProfilePage";
+import './App.css';
+import {BrowserRouter as Router} from "react-router-dom";
+import AppRouter from "./components/AppRouter";
 
-
-function App() {
-    const {user} = useUser();
-
-    if (user == null) {
-        return null;
-    }
+const App = () => {
 
     return (
-        <BrowserRouter>
-            <Routes>
-                <Route exact path="/" element={<ChatPage/>}/>
-                <Route path="/me" element={<ProfilePage/>}/>
-            </Routes>
-        </BrowserRouter>
+        <Router>
+            <AppRouter/>
+        </Router>
     );
-}
+};
 
 export default App;

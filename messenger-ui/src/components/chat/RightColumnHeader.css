@@ -1,0 +1,14 @@
+.right-column-header {
+    height: 55px;
+    display: flex;
+    align-items: center;
+}
+
+.right-column-header .info {
+    margin-left: 20px;
+}
+
+.right-column-header .username {
+    margin-top: 0;
+    margin-bottom: 0;
+}
