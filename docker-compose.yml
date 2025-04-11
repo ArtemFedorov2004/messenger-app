@@ -1,15 +1,29 @@
 services:
-  mongodb:
-    image: mongo
+  mongo-db:
+    image: mongo:8.0.6
     container_name: mongo-db
-    ports:
-      - 27017:27017
     env_file: '.env'
     volumes:
       - mongo:/data
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_DB_USERNAME}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_DB_PASSWORD}
+    networks:
+      - messenger-network
+
+  messenger-server:
+    build:
+      context: messenger-server
+    container_name: messenger-server
+    env_file: '.env'
+    environment:
+      - MONGO_DB_USERNAME=${MONGO_DB_USERNAME}
+      - MONGO_DB_PASSWORD=${MONGO_DB_PASSWORD}
+      - MONGO_DB_HOST=${MONGO_DB_HOST}
+    depends_on:
+      - mongo-db
+    networks:
+      - messenger-network
 
   nginx:
     image: nginx:stable-alpine
@@ -26,6 +40,8 @@ services:
   messenger-ui:
     image: artem20fedorov00/messenger-ui
     container_name: messenger-ui
+    depends_on:
+      - messenger-server
     networks:
       - messenger-network
 
