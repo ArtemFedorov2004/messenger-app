@@ -17,5 +17,6 @@ class HelloControllerTest {
 
         var result = this.helloController.hello();
         assertEquals("Hello world", result.getBody());
+        //throw new RuntimeException();
     }
 }
