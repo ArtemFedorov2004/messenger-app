@@ -66,6 +66,15 @@ jobs:
       - name: Copy nginx.conf file
         run: scp nginx.conf ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/nginx.conf
 
+      - name: Set Docker Compose Environment Variables
+        run: |
+          echo "MONGO_DB_USERNAME=${{ secrets.MONGO_DB_USERNAME }}" >> .env
+          echo "MONGO_DB_PASSWORD=${{ secrets.MONGO_DB_PASSWORD }}" >> .env
+          echo "MONGO_DB_HOST=${{ secrets.MONGO_DB_HOST }}" >> .env
+
+      - name: Copy .env file
+        run: scp .env ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/.env
+
       - name: Deploy to VPS
         run: |
           ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} << 'EOF'
