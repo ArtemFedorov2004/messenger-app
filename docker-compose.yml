@@ -1,4 +1,16 @@
 services:
+  mongodb:
+    image: mongo
+    container_name: mongo-db
+    ports:
+      - 27017:27017
+    env_file: '.env'
+    volumes:
+      - mongo:/data
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_DB_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_DB_PASSWORD}
+
   nginx:
     image: nginx:stable-alpine
     container_name: nginx
@@ -19,3 +31,6 @@ services:
 
 networks:
   messenger-network:
+
+volumes:
+  mongo: { }

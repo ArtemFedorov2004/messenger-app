@@ -1,8 +1,8 @@
 spring:
   data:
     mongodb:
-      username: DELETE_ME
-      password: DELETE_ME
+      username: user
+      password: q
       host: localhost
       port: 27017
       database: messenger
