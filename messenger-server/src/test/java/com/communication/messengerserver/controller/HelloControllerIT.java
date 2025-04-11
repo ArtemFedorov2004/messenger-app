@@ -28,6 +28,6 @@ class HelloControllerIT {
 
         assertEquals(ret.getUsername(), "Artem");
         log.info(ret.getUsername() + ret.getId());
-        throw new RuntimeException();
+        //throw new RuntimeException();
     }
 }
