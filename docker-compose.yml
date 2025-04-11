@@ -12,8 +12,7 @@ services:
       - messenger-network
 
   messenger-server:
-    build:
-      context: messenger-server
+    image: artem20fedorov00/messenger-server
     container_name: messenger-server
     env_file: '.env'
     environment:
@@ -24,7 +23,6 @@ services:
       - mongo-db
     networks:
       - messenger-network
-
 
   nginx:
     image: nginx:stable-alpine
