@@ -25,6 +25,7 @@ services:
     networks:
       - messenger-network
 
+
   nginx:
     image: nginx:stable-alpine
     container_name: nginx
