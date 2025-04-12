@@ -1,0 +1,10 @@
+spring:
+  data:
+    mongodb:
+      username: $USER
+      password: q
+      host: localhost
+      port: 27017
+      database: messenger
+      authentication-database: admin
+      auto-index-creation: true

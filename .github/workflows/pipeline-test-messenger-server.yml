@@ -1,0 +1,31 @@
+name: Run Unit/Integration Tests for Messenger Server
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths:
+      - messenger-server/**
+      - 'docker-compose.yml'
+      - .github/workflows/*-messenger-server.yml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./messenger-server
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'oracle'
+
+      - name: Run Unit Tests
+        run: mvn clean test
+
+      - name: Run Integration Tests
+        run: mvn clean verify

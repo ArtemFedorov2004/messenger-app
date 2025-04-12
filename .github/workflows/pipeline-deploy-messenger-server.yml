@@ -1,43 +1,96 @@
-name: deploy messenger ui
+name: Deploy Messenger Server
 
 on:
   push:
     branches: [ master ]
     paths:
-      - messenger-ui/**
+      - messenger-server/**
       - 'docker-compose.yml'
-      - .github/workflows/*-messenger-ui.yml
+      - .github/workflows/*-messenger-server.yml
 jobs:
-  build-image:
-    name: Build Docker image
+  test:
+    name: Run Unit/Integration Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'oracle'
+
+      - name: Running Tests
+        run: |
+          cd messenger-server
+          mvn clean verify
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build Messenger Server
+    needs: [ test ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'oracle'
+
+      - name: Compile project
+        run: |
+          cd messenger-server
+          mvn clean package -DskipTests
+
+  build-image:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: [ build ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'oracle'
+
       - name: Extract project version
         id: extract_version
         run: |
-          cd messenger-ui
-          echo "VERSION=$(jq -r '.version' package.json)" >> $GITHUB_OUTPUT
+          cd messenger-server
+          echo "VERSION=$( mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression="project.version" -q -DforceStdout)" >> $GITHUB_OUTPUT
+
+      - name: Compile project
+        run: |
+          cd messenger-server
+          mvn clean package
+
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build & Push to DockerHub
+      - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: messenger-ui
-          file: messenger-ui/Dockerfile
+          context: messenger-server
+          file: messenger-server/Dockerfile
           push: true
           platforms: linux/amd64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/messenger-ui:latest,${{ secrets.DOCKERHUB_USERNAME }}/messenger-ui:${{ steps.extract_version.outputs.VERSION }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/messenger-server:latest,${{ secrets.DOCKERHUB_USERNAME }}/messenger-server:${{ steps.extract_version.outputs.VERSION }}
 
   deploy:
-    name: Deploy
+    name: Deploy to VPS
     runs-on: ubuntu-latest
     needs: [ build-image ]
     steps:
@@ -63,9 +116,6 @@ jobs:
       - name: Copy docker-compose file
         run: scp docker-compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/docker-compose.yml
 
-      - name: Copy nginx.conf file
-        run: scp nginx.conf ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/nginx.conf
-
       - name: Set Docker Compose Environment Variables
         run: |
           echo "MONGO_DB_USERNAME=${{ secrets.MONGO_DB_USERNAME }}" >> .env
@@ -75,7 +125,7 @@ jobs:
       - name: Copy .env file
         run: scp .env ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/.env
 
-      - name: Deploy to VPS
+      - name: Deploy Application to VPS
         run: |
           ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} << 'EOF'
            cd messenger-app
