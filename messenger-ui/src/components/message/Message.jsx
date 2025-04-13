@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import {Dropdown} from "antd";
 import MessageContent from "./MessageContent";
-import ChatService from "../../api/ChatService";
+import ChatService from "../../service/ChatService";
 import {observer} from "mobx-react-lite";
 import {Context} from "../../index";
 

@@ -6,7 +6,7 @@ import UsernameInput from "./UsernameInput";
 import PasswordInput from "./PasswordInput";
 import {Context} from "../../index";
 import {observer} from "mobx-react-lite";
-import {login} from "../../api/AuthService";
+import {login} from "../../service/AuthService";
 
 const LoginForm = observer(() => {
     const {user} = useContext(Context);

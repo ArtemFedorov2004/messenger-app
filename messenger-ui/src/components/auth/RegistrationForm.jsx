@@ -7,7 +7,7 @@ import EmailInput from "./EmailInput";
 import PasswordInput from "./PasswordInput";
 import {observer} from "mobx-react-lite";
 import {Context} from "../../index";
-import {registration} from "../../api/AuthService";
+import {registration} from "../../service/AuthService";
 
 const RegistrationForm = observer(() => {
     const {user} = useContext(Context);

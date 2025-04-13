@@ -3,7 +3,7 @@ import {Layout, Row} from "antd";
 import ChatLeftColumn from "../components/chat/ChatLeftColumn";
 import ChatRightColumn from "../components/chat/ChatRightColumn";
 import {Context} from "../index";
-import ChatService from "../api/ChatService";
+import ChatService from "../service/ChatService";
 import {observer} from "mobx-react-lite";
 
 const Chat = observer(() => {

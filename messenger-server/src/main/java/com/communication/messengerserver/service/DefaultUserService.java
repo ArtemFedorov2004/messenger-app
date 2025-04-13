@@ -1,15 +1,15 @@
 package com.communication.messengerserver.service;
 
-import com.communication.messengerserver.controller.mapper.UserMapper;
-import com.communication.messengerserver.controller.payload.EditUserPayload;
+import com.communication.messengerserver.entity.Role;
 import com.communication.messengerserver.entity.User;
+import com.communication.messengerserver.exception.AlreadyExistsException;
 import com.communication.messengerserver.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.util.ReflectionUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.lang.reflect.Field;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -17,43 +17,43 @@ public class DefaultUserService implements UserService {
 
     private final UserRepository userRepository;
 
-    @Override
-    public User findUser(String userId) {
-        return this.userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("messenger-server.errors.group_chat.not_found"));
-    }
+    private final PasswordEncoder passwordEncoder;
 
     @Override
-    public User createUser(String firstname, String lastname, String username, String email) {
-        return this.userRepository.save(User.builder()
-                .firstname(firstname)
-                .lastname(lastname)
+    public User createUser(String username, String email, String password) {
+        if (this.userRepository.existsByUsername(username)) {
+            throw new AlreadyExistsException("Username '%s' is already taken.".formatted(username));
+        }
+
+        if (this.userRepository.existsByEmail(email)) {
+            throw new AlreadyExistsException("Email '%s' is already in use.".formatted(email));
+        }
+
+        var user = User.builder()
                 .username(username)
                 .email(email)
-                .build());
+                .password(passwordEncoder.encode(password))
+                .role(Role.ROLE_USER)
+                .build();
+
+        return this.userRepository.save(user);
     }
 
     @Override
-    public void editUser(String userId, EditUserPayload payload) {
-        User editedUser = UserMapper.toUser(payload);
-        this.userRepository.findById(userId)
-                .ifPresentOrElse(user -> {
-                    Field[] fields = User.class.getDeclaredFields();
-                    for (Field field : fields) {
-                        field.setAccessible(true);
-                        try {
-                            Object fieldValue = field.get(editedUser);
-                            if (fieldValue != null) {
-                                ReflectionUtils.setField(field, user, fieldValue);
-                            }
-                        } catch (IllegalAccessException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
+    public User getByUsername(String username) {
+        return this.userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        "User with username '%s' not found".formatted(username)));
+    }
 
-                    this.userRepository.save(user);
-                }, () -> {
-                    throw new NoSuchElementException("messenger-server.errors.group_chat.not_found");
-                });
+    @Override
+    public UserDetailsService userDetailsService() {
+        return this::getByUsername;
+    }
+
+    @Override
+    public User getCurrentUser() {
+        var username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return this.getByUsername(username);
     }
 }

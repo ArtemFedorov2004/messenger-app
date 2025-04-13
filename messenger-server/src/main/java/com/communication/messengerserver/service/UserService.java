@@ -1,13 +1,15 @@
 package com.communication.messengerserver.service;
 
-import com.communication.messengerserver.controller.payload.EditUserPayload;
 import com.communication.messengerserver.entity.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface UserService {
 
-    User findUser(String userId);
+    User createUser(String username, String email, String password);
 
-    User createUser(String firstname, String lastname, String username, String email);
+    User getByUsername(String username);
 
-    void editUser(String userId, EditUserPayload payload);
+    UserDetailsService userDetailsService();
+
+    User getCurrentUser();
 }

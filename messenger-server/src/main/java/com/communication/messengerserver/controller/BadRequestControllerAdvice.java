@@ -1,5 +1,6 @@
 package com.communication.messengerserver.controller;
 
+import com.communication.messengerserver.exception.AlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -31,5 +32,14 @@ public class BadRequestControllerAdvice {
 
         return ResponseEntity.badRequest()
                 .body(problemDetail);
+    }
+
+    @ExceptionHandler(AlreadyExistsException.class)
+    public ResponseEntity<ProblemDetail> handleAlreadyExistsException(AlreadyExistsException exception,
+                                                                      Locale locale) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
+                        this.messageSource.getMessage(exception.getMessage(), new Object[0],
+                                exception.getMessage(), locale)));
     }
 }
