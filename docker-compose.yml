@@ -2,23 +2,17 @@ services:
   mongo-db:
     image: mongo:8.0.6
     container_name: mongo-db
-    env_file: '.env'
     volumes:
       - mongo:/data
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_DB_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_DB_PASSWORD}
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
     networks:
       - messenger-network
 
   messenger-server:
     image: artem20fedorov00/messenger-server
     container_name: messenger-server
-    env_file: '.env'
-    environment:
-      - MONGO_DB_USERNAME=${MONGO_DB_USERNAME}
-      - MONGO_DB_PASSWORD=${MONGO_DB_PASSWORD}
-      - MONGO_DB_HOST=${MONGO_DB_HOST}
     depends_on:
       - mongo-db
     networks:

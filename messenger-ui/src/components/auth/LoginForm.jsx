@@ -6,7 +6,6 @@ import UsernameInput from "./UsernameInput";
 import PasswordInput from "./PasswordInput";
 import {Context} from "../../index";
 import {observer} from "mobx-react-lite";
-import {login} from "../../api/AuthService";
 
 const LoginForm = observer(() => {
     const {user} = useContext(Context);
@@ -17,12 +16,9 @@ const LoginForm = observer(() => {
     const submit = async () => {
         setIsLoading(true)
         try {
-            const data = await login(username, password)
-
-            if (data) {
-                user.setUser(data)
-                user.setIsAuth(true)
-            }
+            await user.login(username, password)
+        } catch (e) {
+            console.error(e.response.data)
         } finally {
             setIsLoading(false)
         }

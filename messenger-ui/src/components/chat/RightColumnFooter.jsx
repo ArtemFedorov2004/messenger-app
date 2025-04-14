@@ -4,7 +4,7 @@ import {SendOutlined} from "@ant-design/icons";
 import './RightColumnFooter.css'
 import {Context} from "../../index";
 import {observer} from "mobx-react-lite";
-import ChatService from "../../api/ChatService";
+import ChatService from "../../service/ChatService";
 
 const RightColumnFooter = observer(() => {
     const {chat} = useContext(Context);

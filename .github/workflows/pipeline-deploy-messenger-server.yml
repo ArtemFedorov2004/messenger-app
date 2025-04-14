@@ -116,15 +116,6 @@ jobs:
       - name: Copy docker-compose file
         run: scp docker-compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/docker-compose.yml
 
-      - name: Set Docker Compose Environment Variables
-        run: |
-          echo "MONGO_DB_USERNAME=${{ secrets.MONGO_DB_USERNAME }}" >> .env
-          echo "MONGO_DB_PASSWORD=${{ secrets.MONGO_DB_PASSWORD }}" >> .env
-          echo "MONGO_DB_HOST=${{ secrets.MONGO_DB_HOST }}" >> .env
-
-      - name: Copy .env file
-        run: scp .env ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/.env
-
       - name: Deploy Application to VPS
         run: |
           ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} << 'EOF'

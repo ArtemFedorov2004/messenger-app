@@ -1,10 +1,17 @@
 spring:
   data:
     mongodb:
-      username: $USER
+      username: user
       password: q
       host: localhost
       port: 27017
       database: messenger
       authentication-database: admin
       auto-index-creation: true
+allowed-origins: http://localhost:3000
+access-token:
+  signing-key: 62bfb1c719a04dd7b94fe4a257fb074e1c530d0f118f588fc23d008190fe06fec27c26b875057f4e85b1fc3
+  ttl: 60000
+refresh-token:
+  signing-key: 719cc71aa00f7747d0b2421562919474ce7cb4600241eec9e3c32bcbd3b0bdfae2a5b88a5e3df3245b2abc2
+  ttl: 300000
