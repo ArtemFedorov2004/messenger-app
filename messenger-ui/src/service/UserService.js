@@ -1,3 +1,5 @@
+import {$authApi} from "../http";
+
 export default class UserService {
     static users = [
         {
@@ -13,6 +15,10 @@ export default class UserService {
             password: "q"
         }
     ]
+
+    static async fetchCurrentUser() {
+        return $authApi.get("/user")
+    }
 
     static async getUsers() {
         return new Promise((resolve) => {

@@ -7,7 +7,6 @@ import EmailInput from "./EmailInput";
 import PasswordInput from "./PasswordInput";
 import {observer} from "mobx-react-lite";
 import {Context} from "../../index";
-import {registration} from "../../service/AuthService";
 
 const RegistrationForm = observer(() => {
     const {user} = useContext(Context);
@@ -19,12 +18,9 @@ const RegistrationForm = observer(() => {
     const submit = async () => {
         setIsLoading(true)
         try {
-            const data = await registration(username, email, password)
-
-            if (data) {
-                user.setUser(data)
-                user.setIsAuth(true)
-            }
+            await user.registration(username, email, password)
+        } catch (e) {
+            console.error(e.response.data)
         } finally {
             setIsLoading(false)
         }
