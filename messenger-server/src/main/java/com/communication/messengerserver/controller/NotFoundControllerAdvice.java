@@ -1,7 +1,6 @@
 package com.communication.messengerserver.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -15,14 +14,11 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class NotFoundControllerAdvice {
 
-    private final MessageSource messageSource;
+    private final GlobalExceptionHandler globalExceptionHandler;
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ProblemDetail> handleNoSuchElementException(NoSuchElementException exception,
                                                                       Locale locale) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND,
-                        this.messageSource.getMessage(exception.getMessage(), new Object[0],
-                                exception.getMessage(), locale)));
+        return this.globalExceptionHandler.handleException(exception, HttpStatus.NOT_FOUND, locale);
     }
 }

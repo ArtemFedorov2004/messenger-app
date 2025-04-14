@@ -3,12 +3,14 @@ package com.communication.messengerserver.controller;
 import com.communication.messengerserver.controller.payload.LoginPayload;
 import com.communication.messengerserver.controller.payload.RegistrationPayload;
 import com.communication.messengerserver.controller.payload.TokensPayload;
+import com.communication.messengerserver.exception.MissingRefreshTokenCookieException;
 import com.communication.messengerserver.service.AuthenticationService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 
 @RestController
@@ -27,7 +28,8 @@ public class AuthenticationRestController {
 
     public static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
 
-    public static final int REFRESH_TOKEN_COOKIE_MAX_AGE = 300;
+    @Value("${refresh-token.ttl}")
+    public int refreshTokenCookieMaxAge;
 
     private final AuthenticationService authenticationService;
 
@@ -43,7 +45,7 @@ public class AuthenticationRestController {
             }
         } else {
             TokensPayload tokens = this.authenticationService.registration(payload.username(), payload.email(), payload.password());
-            this.addRefreshTokenCookie(tokens.refreshToken(), REFRESH_TOKEN_COOKIE_MAX_AGE, response);
+            this.addRefreshTokenCookie(tokens.refreshToken(), refreshTokenCookieMaxAge, response);
             return tokens;
         }
     }
@@ -60,7 +62,7 @@ public class AuthenticationRestController {
             }
         } else {
             TokensPayload tokens = this.authenticationService.login(payload.username(), payload.password());
-            this.addRefreshTokenCookie(tokens.refreshToken(), REFRESH_TOKEN_COOKIE_MAX_AGE, response);
+            this.addRefreshTokenCookie(tokens.refreshToken(), refreshTokenCookieMaxAge, response);
             return tokens;
         }
     }
@@ -73,7 +75,7 @@ public class AuthenticationRestController {
     @PostMapping("/refresh")
     public TokensPayload refresh(HttpServletRequest request, HttpServletResponse response) {
         if (request.getCookies() == null) {
-            throw new NoSuchElementException("Cookies are missing");
+            throw new MissingRefreshTokenCookieException("Cookies are missing");
         }
 
         return Arrays.stream(request.getCookies())
@@ -81,10 +83,10 @@ public class AuthenticationRestController {
                 .findFirst()
                 .map(cookie -> {
                     TokensPayload tokens = this.authenticationService.refresh(cookie.getValue());
-                    this.addRefreshTokenCookie(tokens.refreshToken(), REFRESH_TOKEN_COOKIE_MAX_AGE, response);
+                    this.addRefreshTokenCookie(tokens.refreshToken(), refreshTokenCookieMaxAge, response);
                     return tokens;
                 })
-                .orElseThrow(() -> new NoSuchElementException("Refresh token not found"));
+                .orElseThrow(() -> new MissingRefreshTokenCookieException("Refresh token is missing"));
     }
 
     private void addRefreshTokenCookie(String refreshToken, int maxAge, HttpServletResponse response) {

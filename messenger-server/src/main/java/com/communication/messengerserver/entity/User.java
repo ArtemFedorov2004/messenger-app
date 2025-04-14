@@ -1,5 +1,6 @@
 package com.communication.messengerserver.entity;
 
+import com.communication.messengerserver.controller.payload.UserPayload;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -67,5 +68,9 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public UserPayload toPayload() {
+        return new UserPayload(this.id, this.username, this.email);
     }
 }

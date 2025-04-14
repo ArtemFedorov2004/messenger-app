@@ -1,6 +1,7 @@
 package com.communication.messengerserver.controller;
 
 import com.communication.messengerserver.exception.AlreadyExistsException;
+import com.communication.messengerserver.exception.MissingRefreshTokenCookieException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,8 @@ import java.util.Locale;
 public class BadRequestControllerAdvice {
 
     private final MessageSource messageSource;
+
+    private final GlobalExceptionHandler globalExceptionHandler;
 
     @ExceptionHandler(BindException.class)
     public ResponseEntity<ProblemDetail> handleBindException(BindException exception, Locale locale) {
@@ -37,9 +40,12 @@ public class BadRequestControllerAdvice {
     @ExceptionHandler(AlreadyExistsException.class)
     public ResponseEntity<ProblemDetail> handleAlreadyExistsException(AlreadyExistsException exception,
                                                                       Locale locale) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
-                        this.messageSource.getMessage(exception.getMessage(), new Object[0],
-                                exception.getMessage(), locale)));
+        return this.globalExceptionHandler.handleException(exception, HttpStatus.BAD_REQUEST, locale);
+    }
+
+    @ExceptionHandler(MissingRefreshTokenCookieException.class)
+    public ResponseEntity<ProblemDetail> handleMissingRefreshTokenCookieException(MissingRefreshTokenCookieException exception,
+                                                                                  Locale locale) {
+        return this.globalExceptionHandler.handleException(exception, HttpStatus.BAD_REQUEST, locale);
     }
 }
