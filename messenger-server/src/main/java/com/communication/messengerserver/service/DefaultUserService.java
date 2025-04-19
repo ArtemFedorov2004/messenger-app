@@ -19,6 +19,8 @@ public class DefaultUserService implements UserService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final ChatService chatService;
+
     @Override
     public User createUser(String username, String email, String password) {
         if (this.userRepository.existsByUsername(username)) {
@@ -36,7 +38,11 @@ public class DefaultUserService implements UserService {
                 .role(Role.ROLE_USER)
                 .build();
 
-        return this.userRepository.save(user);
+
+        User saved = this.userRepository.save(user);
+        this.createChatsForNewUser(saved);
+
+        return saved;
     }
 
     @Override
@@ -55,5 +61,10 @@ public class DefaultUserService implements UserService {
     public User getCurrentUser() {
         var username = SecurityContextHolder.getContext().getAuthentication().getName();
         return this.getByUsername(username);
+    }
+
+    // этой логики не должно быть сдесь
+    private void createChatsForNewUser(User user) {
+        this.chatService.createChatForNewUser(user);
     }
 }

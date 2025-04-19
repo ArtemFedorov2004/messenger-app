@@ -4,7 +4,6 @@ import com.communication.messengerserver.security.JwtAuthenticationFilter;
 import com.communication.messengerserver.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,7 +47,7 @@ public class SecurityBeans {
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfiguration = new CorsConfiguration();
                     corsConfiguration.setAllowedOriginPatterns(allowedOrigins);
-                    corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
                     corsConfiguration.setAllowedHeaders(List.of("*"));
                     corsConfiguration.setAllowCredentials(true);
                     return corsConfiguration;
@@ -56,6 +55,7 @@ public class SecurityBeans {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/api/registration", "/api/login",
                                 "/api/logout", "/api/refresh").permitAll()
+                        .requestMatchers("/api/ws/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(exceptionHandling ->
                         exceptionHandling
