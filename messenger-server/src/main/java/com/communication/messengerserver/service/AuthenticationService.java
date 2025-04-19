@@ -20,8 +20,14 @@ public class AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
 
+    // этого тут не должно быть
+    private final NotificationService notificationService;
+
     public TokensPayload registration(String username, String email, String password) {
         User user = this.userService.createUser(username, email, password);
+
+        // этого тут не должно быть
+        this.notificationService.send(user);
 
         String accessToken = this.accessTokenService.generateToken(user);
         String refreshToken = this.refreshTokenService.generateToken(user);

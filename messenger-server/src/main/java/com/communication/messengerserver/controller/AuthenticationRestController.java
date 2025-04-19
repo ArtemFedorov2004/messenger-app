@@ -75,7 +75,7 @@ public class AuthenticationRestController {
     @PostMapping("/refresh")
     public TokensPayload refresh(HttpServletRequest request, HttpServletResponse response) {
         if (request.getCookies() == null) {
-            throw new MissingRefreshTokenCookieException("Cookies are missing");
+            throw new MissingRefreshTokenCookieException("messenger_server.errors.refresh_token_not_found");
         }
 
         return Arrays.stream(request.getCookies())
@@ -86,7 +86,8 @@ public class AuthenticationRestController {
                     this.addRefreshTokenCookie(tokens.refreshToken(), refreshTokenCookieMaxAge, response);
                     return tokens;
                 })
-                .orElseThrow(() -> new MissingRefreshTokenCookieException("Refresh token is missing"));
+                .orElseThrow(() ->
+                        new MissingRefreshTokenCookieException("messenger_server.errors.refresh_token_not_found"));
     }
 
     private void addRefreshTokenCookie(String refreshToken, int maxAge, HttpServletResponse response) {

@@ -1,9 +1,13 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import './MessageContent.css';
+import {observer} from "mobx-react-lite";
+import {Context} from "../../index";
 
-const MessageContent = ({message}) => {
+const MessageContent = observer(({message}) => {
+    const {user} = useContext(Context);
+
     return (
-        <div className={`message-box ${message.senderId === '1' ? 'my-message' : 'friend-message'}`}>
+        <div className={`message-box ${message.senderName === user.user.username ? 'my-message' : 'friend-message'}`}>
             <p>
                 {message.content}
                 <br/>
@@ -16,6 +20,6 @@ const MessageContent = ({message}) => {
             </p>
         </div>
     );
-};
+});
 
 export default MessageContent;

@@ -5,26 +5,35 @@ import ChatRightColumn from "../components/chat/ChatRightColumn";
 import {Context} from "../index";
 import ChatService from "../service/ChatService";
 import {observer} from "mobx-react-lite";
+import StompClient from "../ws";
 
 const Chat = observer(() => {
-    const {chat} = useContext(Context);
+    const {chat, user} = useContext(Context);
 
     useEffect(() => {
-        const fetchChats = async () => {
-            const data = await ChatService.getChats();
+        const accessToken = localStorage.getItem('token');
+        const username = user.user.username;
+        const client = new StompClient(accessToken, username, chat);
 
-            chat.setChats(data);
+        try {
+            if (user.user.username) {
+                ChatService.getChats()
+                    .then(response => response.data)
+                    .then(data => chat.setChats(data))
+                    .then(() => {
+                        client.connect()
+                    });
+            }
+
+        } catch (error) {
+            console.error(error);
+        }
+
+
+        return () => {
+            client.disconnect();
         };
-
-        fetchChats().then(() => {
-            chat.setNewMessages(chat.chats.map((chat) =>
-                ({
-                    id: null,
-                    chatId: chat.id,
-                    content: ''
-                })))
-        });
-    }, [chat]);
+    }, [chat, user.user]);
 
     return (
         <Layout className="h100">

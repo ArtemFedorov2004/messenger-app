@@ -4,8 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record EditMessagePayload(
-        @NotNull(message = "{messenger-server.messages.edit.errors.content_is_null}")
-        @NotBlank(message = "{messenger-server.messages.edit.errors.content_is_blank}")
+        @NotNull(message = "{messenger_server.messages.edit.errors.content_is_null}")
+        @NotBlank(message = "{messenger_server.messages.edit.errors.content_is_blank}")
         String content
 ) {
 }

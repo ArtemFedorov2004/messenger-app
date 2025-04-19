@@ -64,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (JwtException | IllegalArgumentException exception) {
 
-        }  finally {
+        } finally {
             filterChain.doFilter(request, response);
         }
     }

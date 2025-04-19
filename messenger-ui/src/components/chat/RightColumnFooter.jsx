@@ -24,12 +24,17 @@ const RightColumnFooter = observer(() => {
     }
 
     const createMessage = async () => {
-        const data = await ChatService.createMessage(selectedChatId, newMessage.content);
+        const data = await ChatService.createMessage(selectedChatId, newMessage.content)
+            .then(response => response.data);
+
         chat.addMessage(data);
     }
 
     const editMessage = async () => {
-        const data = await ChatService.editMessage(selectedChatId, newMessage.id, newMessage.content);
+        const data = await ChatService.editMessage(selectedChatId, newMessage.id, newMessage.content)
+            .then(response => response.data);
+
+        // не пойдет
         chat.editMessage(data)
     }
 

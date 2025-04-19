@@ -1,7 +1,6 @@
 import React, {useMemo} from 'react';
 import {Avatar, List} from "antd";
 import userLogo from "../../assets/user.png";
-import groupLogo from "../../assets/group.png";
 import './ChatListItem.css';
 
 const ChatListItem = ({chat}) => {
@@ -15,7 +14,7 @@ const ChatListItem = ({chat}) => {
 
     return (
         <List.Item.Meta
-            avatar={<Avatar src={chat.type === "USER" ? userLogo : groupLogo}/>}
+            avatar={<Avatar src={userLogo}/>}
             title={chat.title}
             description={
                 <div className="last-message">

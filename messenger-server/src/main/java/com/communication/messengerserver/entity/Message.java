@@ -1,29 +1,32 @@
 package com.communication.messengerserver.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 
-@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document("messages")
+@Data
 public class Message {
 
-    private String id;
+    private Integer id;
 
-    @JsonIgnore
-    @DBRef
-    private User sender;
+    @Field("chat_id")
+    private String chatId;
+
+    @Field("sender_name")
+    private String senderName;
 
     private String content;
 
-    @Field(name = "created_at")
+    @Field("created_at")
     private LocalDateTime createdAt;
+
+    @Field("edited_at")
+    private LocalDateTime editedAt;
 }
