@@ -7,7 +7,7 @@ import {Context} from "../../index";
 
 
 const Message = observer(({message}) => {
-    const {chat} = useContext(Context);
+    const {chat, user} = useContext(Context);
 
     const menuItems = [
         {
@@ -29,7 +29,7 @@ const Message = observer(({message}) => {
     ];
 
     return (
-        message.senderId === '1'
+        message.senderName === user.user.username
             ?
             <Dropdown
                 menu={{items: menuItems}}

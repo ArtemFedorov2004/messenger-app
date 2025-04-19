@@ -10,6 +10,14 @@ export default class ChatStore {
 
     setChats(chats) {
         this._chats = chats
+
+        this.setNewMessages(chats.map(chat =>
+            ({
+                id: null,
+                chatId: chat.id,
+                content: ''
+            })
+        ));
     }
 
     setNewMessages(newMessages) {
@@ -30,6 +38,15 @@ export default class ChatStore {
 
     get selectedChatId() {
         return this._selectedChatId;
+    }
+
+    addChat(newChat) {
+        this.setChats([...this._chats, newChat]);
+
+        this.setNewMessages([
+            ...this._newMessages,
+            {id: null, chatId: newChat.id, content: ''}
+        ]);
     }
 
     addMessage(message) {
