@@ -1,3 +1,4 @@
+name: messenger
 services:
   mongo-db:
     image: mongo:8.0.6
@@ -10,14 +11,16 @@ services:
     networks:
       - messenger-network
 
-  messenger-server:
-    image: artem20fedorov00/messenger-server
-    container_name: messenger-server
-    depends_on:
-      - mongo-db
-    networks:
-      - messenger-network
-
+  server:
+    restart: always
+    build:
+      dockerfile: ./messenger-server/Dockerfile
+      args:
+        JAR_FILE: messenger-server/target/messenger-server-0.0.1-SNAPSHOT-exec.jar
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - '8080:8080'
   nginx:
     image: nginx:stable-alpine
     container_name: nginx
@@ -37,9 +40,3 @@ services:
       - messenger-server
     networks:
       - messenger-network
-
-networks:
-  messenger-network:
-
-volumes:
-  mongo: { }
