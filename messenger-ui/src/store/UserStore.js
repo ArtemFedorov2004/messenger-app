@@ -6,6 +6,7 @@ export default class UserStore {
     constructor() {
         this._isAuth = false;
         this._user = {}
+        this._isSearchUsers = false;
         makeAutoObservable(this)
     }
 
@@ -17,12 +18,20 @@ export default class UserStore {
         this._user = user
     }
 
+    setIsSearchUsers(bool) {
+        this._isSearchUsers = bool
+    }
+
     get isAuth() {
         return this._isAuth;
     }
 
     get user() {
         return this._user;
+    }
+
+    get isSearchUsers() {
+        return this._isSearchUsers;
     }
 
     async registration(username, email, password) {

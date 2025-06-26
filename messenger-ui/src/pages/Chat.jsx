@@ -1,4 +1,4 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Layout, Row} from "antd";
 import ChatLeftColumn from "../components/chat/ChatLeftColumn";
 import ChatRightColumn from "../components/chat/ChatRightColumn";
@@ -6,6 +6,7 @@ import {Context} from "../index";
 import ChatService from "../service/ChatService";
 import {observer} from "mobx-react-lite";
 import StompClient from "../ws";
+import UsersSearchModal from "../components/chat/UsersSearchModal/UsersSearchModal";
 
 const Chat = observer(() => {
     const {chat, user} = useContext(Context);
@@ -39,6 +40,7 @@ const Chat = observer(() => {
         <Layout className="h100">
             <Row>
                 <ChatLeftColumn/>
+                <UsersSearchModal open={user.isSearchUsers} onCancel={() => user.setIsSearchUsers(false)}/>
                 <ChatRightColumn/>
             </Row>
         </Layout>

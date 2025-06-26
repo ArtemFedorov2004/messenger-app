@@ -40,7 +40,7 @@ const LeftColumnHeader = observer(() => {
                     <MenuOutlined/>
                 </Button>
             </Dropdown>
-            <Button className="search">
+            <Button className="search" onClick={() => user.setIsSearchUsers(true)}>
                 Поиск <SearchOutlined/>
             </Button>
         </div>
