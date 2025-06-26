@@ -14,7 +14,7 @@ const ProjectDescription = () => {
             <ul>
                 <li><strong>Frontend:</strong> React, JavaScript, HTML, CSS</li>
                 <li><strong>Backend:</strong> Java, Spring Boot</li>
-                <li><strong>База данных:</strong> MongoDB</li>
+                <li><strong>База данных:</strong> PostgreSQL</li>
                 <li><strong>Сервер:</strong> Tomcat, NGINX</li>
                 <li><strong>Контейнеризация:</strong> Docker</li>
             </ul>

@@ -28,7 +28,7 @@ const RegistrationForm = observer(() => {
 
     return (
         <Form
-            name="login"
+            name="register"
             onFinish={submit}
         >
             <h1 style={{textAlign: 'center'}}>Регистрация</h1>

@@ -29,14 +29,14 @@ export default class UserStore {
         const response = await AuthService.registration(username, email, password);
         localStorage.setItem('token', response.data.accessToken);
         this.setIsAuth(true);
-        await this.fetchCurrentUser();
+        await this.fetchUser(username);
     }
 
     async login(username, password) {
         const response = await AuthService.login(username, password);
         localStorage.setItem('token', response.data.accessToken);
         this.setIsAuth(true);
-        await this.fetchCurrentUser();
+        await this.fetchUser(username);
     }
 
     async logout() {
@@ -55,15 +55,15 @@ export default class UserStore {
             const response = await AuthService.refresh();
             localStorage.setItem('token', response.data.accessToken);
             this.setIsAuth(true);
-            await this.fetchCurrentUser();
+            await this.fetchUser();
         } catch (e) {
             console.error(e);
         }
     }
 
-    async fetchCurrentUser() {
+    async fetchUser(username) {
         try {
-            const response = await UserService.fetchCurrentUser();
+            const response = await UserService.fetchUser(username);
             this.setUser(response.data);
         } catch (e) {
             console.error(e);

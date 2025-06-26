@@ -4,14 +4,18 @@ import {MenuOutlined, SearchOutlined} from "@ant-design/icons";
 import './LeftColumnHeader.css'
 import {Context} from "../../index";
 import {observer} from "mobx-react-lite";
+import {useNavigate} from "react-router-dom";
+import {PROFILE_ROUTE} from "../../utils/consts";
 
 const LeftColumnHeader = observer(() => {
     const {user} = useContext(Context);
+    const navigate = useNavigate();
 
     const menuItems = [
         {
             label: "Аккаунт",
             key: '0',
+            onClick: () => navigate(PROFILE_ROUTE)
         },
         {
             label: 'Выйти',

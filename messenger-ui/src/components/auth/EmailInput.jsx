@@ -7,7 +7,10 @@ const EmailInput = ({email, setEmail}) => {
     return (
         <Form.Item
             name="email"
-            rules={[rules.required("Пожалуйста введите почту")]}
+            rules={[
+                rules.required("Пожалуйста введите почту"),
+                rules.email('Некорректный email')
+            ]}
         >
             <Input
                 prefix={<MailOutlined/>}
