@@ -4,18 +4,23 @@ import io.github.artemfedorov2004.messengerserver.entity.Role;
 import io.github.artemfedorov2004.messengerserver.entity.User;
 import io.github.artemfedorov2004.messengerserver.exception.AlreadyExistsException;
 import io.github.artemfedorov2004.messengerserver.repository.UserRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -141,5 +146,45 @@ class DefaultUserServiceTest {
         // then
         verify(this.userRepository).findByUsername(username);
         verifyNoMoreInteractions(this.userRepository);
+    }
+
+    @Test
+    void searchUsers_ReturnsUserPage() {
+        // given
+        String query = "test";
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<User> mockPage = new PageImpl<>(List.of(
+                new User("testuser", "test@example.com", "hash", Role.ROLE_USER)
+        ));
+
+        doReturn(mockPage).when(this.userRepository)
+                .findByUsernameContainingOrEmailContainingAllIgnoreCase(
+                        query, query, pageable);
+
+        // when
+        Page<User> result = this.service.searchUsers(query, pageable);
+
+        // then
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        assertEquals(new User("testuser", "test@example.com", "hash", Role.ROLE_USER), result.getContent().get(0));
+
+        verify(this.userRepository).findByUsernameContainingOrEmailContainingAllIgnoreCase(
+                query, query, pageable);
+        verifyNoMoreInteractions(this.userRepository);
+    }
+
+    @Test
+    void searchUsers_WithEmptyQuery_ReturnsEmptyPage() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when
+        Page<User> result = this.service.searchUsers("", pageable);
+
+        // then
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verifyNoInteractions(this.userRepository);
     }
 }

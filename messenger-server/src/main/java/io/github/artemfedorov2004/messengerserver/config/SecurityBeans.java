@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -55,7 +56,7 @@ public class SecurityBeans {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/api/registration", "/api/login",
                                 "/api/logout", "/api/refresh").permitAll()
-                        .requestMatchers("/api/users/{username}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
                         .requestMatchers("/api/ws/**").permitAll()
                         .anyRequest().denyAll())
                 .exceptionHandling(exceptionHandling ->

@@ -5,6 +5,8 @@ import io.github.artemfedorov2004.messengerserver.entity.User;
 import io.github.artemfedorov2004.messengerserver.exception.AlreadyExistsException;
 import io.github.artemfedorov2004.messengerserver.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -49,5 +51,11 @@ public class DefaultUserService implements UserService {
     @Override
     public UserDetailsService userDetailsService() {
         return this::getByUsername;
+    }
+
+    @Override
+    public Page<User> searchUsers(String query, Pageable pageable) {
+        return this.userRepository.findByUsernameContainingOrEmailContainingAllIgnoreCase(
+                query, query, pageable);
     }
 }
