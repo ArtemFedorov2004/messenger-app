@@ -1,5 +1,6 @@
-package com.communication.messengerserver.entity;
+package io.github.artemfedorov2004.messengerserver.entity;
 
+import io.github.artemfedorov2004.messengerserver.controller.payload.MessagePayload;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -14,5 +15,5 @@ public class MessageNotification {
 
     private Type type;
 
-    private Message message;
+    private MessagePayload message;
 }

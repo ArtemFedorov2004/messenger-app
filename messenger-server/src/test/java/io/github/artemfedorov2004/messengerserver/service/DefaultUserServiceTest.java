@@ -4,7 +4,6 @@ import io.github.artemfedorov2004.messengerserver.entity.Role;
 import io.github.artemfedorov2004.messengerserver.entity.User;
 import io.github.artemfedorov2004.messengerserver.exception.AlreadyExistsException;
 import io.github.artemfedorov2004.messengerserver.repository.UserRepository;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,8 +16,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -149,42 +150,104 @@ class DefaultUserServiceTest {
     }
 
     @Test
-    void searchUsers_ReturnsUserPage() {
+    void searchUsersExcludingCurrent_ReturnsFilteredUsers() {
         // given
         String query = "test";
+        User currentUser = new User("current", "current@test.com", "pass", Role.ROLE_USER);
         Pageable pageable = PageRequest.of(0, 10);
-        Page<User> mockPage = new PageImpl<>(List.of(
-                new User("testuser", "test@example.com", "hash", Role.ROLE_USER)
-        ));
+        List<User> users = List.of(
+                new User("test1", "test1@example.com", "pass", Role.ROLE_USER),
+                new User("test2", "test2@example.com", "pass", Role.ROLE_USER)
+        );
+        Page<User> expectedPage = new PageImpl<>(users, pageable, 2);
 
-        doReturn(mockPage).when(this.userRepository)
-                .findByUsernameContainingOrEmailContainingAllIgnoreCase(
-                        query, query, pageable);
+        doReturn(expectedPage)
+                .when(this.userRepository).findByUsernameContainingOrEmailContainingAllIgnoreCaseExcludingUsername(
+                        query, query, "current", pageable
+                );
 
         // when
-        Page<User> result = this.service.searchUsers(query, pageable);
+        Page<User> result = this.service.searchUsersExcludingCurrent(query, currentUser, pageable);
 
         // then
-        assertNotNull(result);
-        assertEquals(1, result.getTotalElements());
-        assertEquals(new User("testuser", "test@example.com", "hash", Role.ROLE_USER), result.getContent().get(0));
-
-        verify(this.userRepository).findByUsernameContainingOrEmailContainingAllIgnoreCase(
-                query, query, pageable);
-        verifyNoMoreInteractions(this.userRepository);
+        assertEquals(expectedPage, result);
+        verify(this.userRepository).findByUsernameContainingOrEmailContainingAllIgnoreCaseExcludingUsername(
+                query, query, currentUser.getUsername(), pageable
+        );
+        verifyNoMoreInteractions(this.userRepository, this.passwordEncoder);
     }
 
     @Test
-    void searchUsers_WithEmptyQuery_ReturnsEmptyPage() {
+    void searchUsersExcludingCurrent_WhenEmptyQuery_ReturnsEmptyPage() {
         // given
+        String query = "";
+        User currentUser = new User("current", "current@test.com", "pass", Role.ROLE_USER);
         Pageable pageable = PageRequest.of(0, 10);
 
+        doReturn(Page.empty())
+                .when(this.userRepository).findByUsernameContainingOrEmailContainingAllIgnoreCaseExcludingUsername(
+                        query, query, "current", pageable
+                );
+
         // when
-        Page<User> result = this.service.searchUsers("", pageable);
+        Page<User> result = this.service.searchUsersExcludingCurrent(query, currentUser, pageable);
 
         // then
-        assertNotNull(result);
         assertTrue(result.isEmpty());
-        verifyNoInteractions(this.userRepository);
+        verify(this.userRepository).findByUsernameContainingOrEmailContainingAllIgnoreCaseExcludingUsername(
+                query, query, "current", pageable
+        );
+        verifyNoInteractions(this.passwordEncoder);
+    }
+
+    @Test
+    void existsAllByUsernames_WhenAllExist_ReturnsTrue() {
+        // given
+        Set<String> usernames = Set.of("user1", "user2");
+
+        doReturn(2)
+                .when(this.userRepository).countAllByUsernames(usernames);
+
+        // when
+        boolean result = this.service.existsAllByUsernames(usernames);
+
+        // then
+        assertTrue(result);
+        verify(this.userRepository).countAllByUsernames(usernames);
+        verifyNoMoreInteractions(this.userRepository, this.passwordEncoder);
+    }
+
+    @Test
+    void existsAllByUsernames_WhenSomeMissing_ReturnsFalse() {
+        // given
+        Set<String> usernames = Set.of("user1", "user2", "user3");
+
+        doReturn(2)
+                .when(this.userRepository).countAllByUsernames(usernames);
+
+        // when
+        boolean result = this.service.existsAllByUsernames(usernames);
+
+        // then
+        assertFalse(result);
+        verify(this.userRepository).countAllByUsernames(usernames);
+        verifyNoMoreInteractions(this.userRepository, this.passwordEncoder);
+    }
+
+    @Test
+    void existsAllByUsernames_UsernamesCollectionContainsDuplicatesAndAllExists_ReturnsTrue() {
+        // given
+        Collection<String> usernames = List.of("user1", "user1", "user3");
+
+        doReturn(2)
+                .when(this.userRepository).countAllByUsernames(usernames);
+
+        // when
+        boolean result = this.service.existsAllByUsernames(usernames);
+
+        // then
+        assertTrue(result);
+        verify(this.userRepository).countAllByUsernames(usernames);
+        verifyNoMoreInteractions(this.userRepository, this.passwordEncoder);
     }
 }

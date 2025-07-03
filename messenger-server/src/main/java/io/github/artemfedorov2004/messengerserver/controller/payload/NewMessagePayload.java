@@ -1,4 +1,4 @@
-package com.communication.messengerserver.controller.payload;
+package io.github.artemfedorov2004.messengerserver.controller.payload;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

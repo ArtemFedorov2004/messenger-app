@@ -1,6 +1,7 @@
 package io.github.artemfedorov2004.messengerserver.controller;
 
 import io.github.artemfedorov2004.messengerserver.exception.AlreadyExistsException;
+import io.github.artemfedorov2004.messengerserver.exception.InvalidChatParticipantsException;
 import io.github.artemfedorov2004.messengerserver.exception.MissingRefreshTokenCookieException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
@@ -46,6 +47,12 @@ public class BadRequestControllerAdvice {
     @ExceptionHandler(MissingRefreshTokenCookieException.class)
     public ResponseEntity<ProblemDetail> handleMissingRefreshTokenCookieException(MissingRefreshTokenCookieException exception,
                                                                                   Locale locale) {
+        return this.globalExceptionHandler.handleException(exception, HttpStatus.BAD_REQUEST, locale);
+    }
+
+    @ExceptionHandler(InvalidChatParticipantsException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidChatParticipantsException(InvalidChatParticipantsException exception,
+                                                                                Locale locale) {
         return this.globalExceptionHandler.handleException(exception, HttpStatus.BAD_REQUEST, locale);
     }
 }

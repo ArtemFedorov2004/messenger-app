@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
+
 @Service
 @RequiredArgsConstructor
 public class DefaultUserService implements UserService {
@@ -54,8 +56,15 @@ public class DefaultUserService implements UserService {
     }
 
     @Override
-    public Page<User> searchUsers(String query, Pageable pageable) {
-        return this.userRepository.findByUsernameContainingOrEmailContainingAllIgnoreCase(
-                query, query, pageable);
+    public Page<User> searchUsersExcludingCurrent(String query, User currentUser, Pageable pageable) {
+        return this.userRepository.findByUsernameContainingOrEmailContainingAllIgnoreCaseExcludingUsername(
+                query, query, currentUser.getUsername(), pageable);
+    }
+
+    @Override
+    public boolean existsAllByUsernames(Collection<String> usernames) {
+        long uniqueCount = usernames.stream().distinct().count();
+        int existingCount = this.userRepository.countAllByUsernames(usernames);
+        return uniqueCount == existingCount;
     }
 }

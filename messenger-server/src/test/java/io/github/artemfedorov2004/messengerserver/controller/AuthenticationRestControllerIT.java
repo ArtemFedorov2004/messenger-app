@@ -25,7 +25,6 @@ class AuthenticationRestControllerIT {
     MockMvc mockMvc;
 
     @Test
-    @Sql("/sql/users.sql")
     void registration_ValidPayload_ReturnsTokensAndSetsCookie() throws Exception {
         // given
         var requestBuilder = MockMvcRequestBuilders.post("/api/registration")
@@ -91,7 +90,7 @@ class AuthenticationRestControllerIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {
-                            "username": "Dima",
+                            "username": "Vadim",
                             "email": "artem@workmail.com",
                             "password": "qazwsx23"
                         }""")
