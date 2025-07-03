@@ -39,34 +39,39 @@ class UsersRestControllerTest {
         int page = 0;
         int size = 5;
         Pageable pageable = PageRequest.of(page, size);
+        User principal = User.builder()
+                .username("username")
+                .email("email")
+                .password("hash")
+                .role(Role.ROLE_USER)
+                .build();
 
-        User user = User.builder()
+        User foundUser = User.builder()
                 .username("testuser")
                 .email("test@example.com")
                 .password("hash")
                 .role(Role.ROLE_USER)
                 .build();
-
-        Page<User> userPage = new PageImpl<>(List.of(user), pageable, 1);
+        Page<User> userPage = new PageImpl<>(List.of(foundUser), pageable, 1);
         UserPayload payload = new UserPayload("testuser", "test@example.com");
 
         doReturn(userPage)
-                .when(this.userService).searchUsers(query, pageable);
+                .when(this.userService).searchUsersExcludingCurrent(query, principal, pageable);
         doReturn(payload)
-                .when(this.userMapper).toPayload(user);
+                .when(this.userMapper).toPayload(foundUser);
 
         // when
-        Page<UserPayload> result = this.controller.searchUsers(query, page, size);
+        Page<UserPayload> result = this.controller.searchUsers(query, page, size, principal);
 
         // then
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
         assertEquals(payload, result.getContent().get(0));
 
-        verify(this.userService).searchUsers(query, pageable);
+        verify(this.userService).searchUsersExcludingCurrent(query, principal, pageable);
         verifyNoMoreInteractions(this.userService);
 
-        verify(this.userMapper).toPayload(user);
+        verify(this.userMapper).toPayload(foundUser);
         verifyNoMoreInteractions(this.userMapper);
     }
 
@@ -76,9 +81,15 @@ class UsersRestControllerTest {
         String query = "";
         int page = 0;
         int size = 5;
+        User principal = User.builder()
+                .username("username")
+                .email("email")
+                .password("hash")
+                .role(Role.ROLE_USER)
+                .build();
 
         // when
-        Page<UserPayload> result = this.controller.searchUsers(query, page, size);
+        Page<UserPayload> result = this.controller.searchUsers(query, page, size, principal);
 
         // then
         assertNotNull(result);

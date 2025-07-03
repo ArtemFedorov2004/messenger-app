@@ -5,7 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
-import java.util.Optional;
+import java.util.Collection;
 
 public interface UserService {
 
@@ -15,5 +15,7 @@ public interface UserService {
 
     UserDetailsService userDetailsService();
 
-    Page<User> searchUsers(String query, Pageable pageable);
+    Page<User> searchUsersExcludingCurrent(String query, User currentUser, Pageable pageable);
+
+    boolean existsAllByUsernames(Collection<String> usernames);
 }

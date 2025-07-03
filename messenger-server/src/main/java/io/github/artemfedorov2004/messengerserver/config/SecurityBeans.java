@@ -56,8 +56,11 @@ public class SecurityBeans {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/api/registration", "/api/login",
                                 "/api/logout", "/api/refresh").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users/**").authenticated()
+                        .requestMatchers("/api/private-chats/**").authenticated()
+                        .requestMatchers("/api/private-chat-messages/**").authenticated()
                         .requestMatchers("/api/ws/**").permitAll()
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().denyAll())
                 .exceptionHandling(exceptionHandling ->
                         exceptionHandling

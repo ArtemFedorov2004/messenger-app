@@ -11,11 +11,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import static io.github.artemfedorov2004.messengerserver.entity.Role.ROLE_USER;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
 @Sql("/sql/users.sql")
@@ -101,32 +102,38 @@ class UserRepositoryIT {
     }
 
     @Test
-    void findByUsernameContainingOrEmailContainingAllIgnoreCase_FindsByUsername_ReturnsUsers() {
+    void findByUsernameContainingOrEmailContainingAllIgnoreCaseExcludingUsername_ReturnsUsers() {
         // given
-        String searchTerm = "Ar";
+        String searchTerm = "A";
+        String excludeUsername = "Dima";
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
         Page<User> result = this.userRepository
-                .findByUsernameContainingOrEmailContainingAllIgnoreCase(
-                        searchTerm, searchTerm, pageable);
+                .findByUsernameContainingOrEmailContainingAllIgnoreCaseExcludingUsername(
+                        searchTerm, searchTerm, excludeUsername, pageable);
 
         // then
-        assertEquals(1, result.getTotalElements());
-        assertEquals(new User("Artem", "artem@workmail.com",
-                "$2a$10$gX1CW8m2TqS/ckSkoUC12ueKPfWBwYC9HtAg9prF4bxeAaZoO46me", ROLE_USER), result.getContent().getFirst());
+        assertEquals(2, result.getTotalElements());
+        assertEquals(
+                List.of(new User("Artem", "artem@workmail.com",
+                                "$2a$10$gX1CW8m2TqS/ckSkoUC12ueKPfWBwYC9HtAg9prF4bxeAaZoO46me", ROLE_USER),
+                        new User("Pavel", "pavel@workmail.com",
+                                "$2a$10$gX1CW8m2TqS/ckSkoUC12ueKPfWBwYC9HtAg9prF4bxeAaZoO46me", ROLE_USER)),
+                result.getContent());
     }
 
     @Test
-    void findByUsernameContainingOrEmailContainingAllIgnoreCase_FindsByEmail_ReturnsUsers() {
+    void findByUsernameContainingOrEmailContainingAllIgnoreCaseExcludingUsername_FindsByEmail_ReturnsUsers() {
         // given
         String searchTerm = "artem@workmail.com";
+        String excludeUsername = "Dima";
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
         Page<User> result = this.userRepository
-                .findByUsernameContainingOrEmailContainingAllIgnoreCase(
-                        searchTerm, searchTerm, pageable);
+                .findByUsernameContainingOrEmailContainingAllIgnoreCaseExcludingUsername(
+                        searchTerm, searchTerm, excludeUsername, pageable);
 
         // then
         assertEquals(1, result.getTotalElements());
@@ -135,15 +142,16 @@ class UserRepositoryIT {
     }
 
     @Test
-    void findByUsernameContainingOrEmailContainingAllIgnoreCase_NoMatches_ReturnsEmpty() {
+    void findByUsernameContainingOrEmailContainingAllIgnoreCaseExcludingUsername_NoMatches_ReturnsEmpty() {
         // given
         String searchTerm = "non_existent";
+        String excludeUsername = "Dima";
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
         Page<User> result = this.userRepository
-                .findByUsernameContainingOrEmailContainingAllIgnoreCase(
-                        searchTerm, searchTerm, pageable);
+                .findByUsernameContainingOrEmailContainingAllIgnoreCaseExcludingUsername(
+                        searchTerm, searchTerm, excludeUsername, pageable);
 
         // then
         assertEquals(0, result.getTotalElements());
@@ -151,19 +159,56 @@ class UserRepositoryIT {
     }
 
     @Test
-    void findByUsernameContainingOrEmailContainingAllIgnoreCase_PaginationWorks() {
+    void findByUsernameContainingOrEmailContainingAllIgnoreCaseExcludingUsername_PaginationWorks() {
         // given
         String searchTerm = "@workmail.com";
+        String excludeUsername = "Dima";
         Pageable pageable = PageRequest.of(0, 1);
 
         // when
         Page<User> result = this.userRepository
-                .findByUsernameContainingOrEmailContainingAllIgnoreCase(
-                        searchTerm, searchTerm, pageable);
+                .findByUsernameContainingOrEmailContainingAllIgnoreCaseExcludingUsername(
+                        searchTerm, searchTerm, excludeUsername, pageable);
 
         // then
         assertEquals(1, result.getContent().size());
         assertEquals(0, result.getNumber());
         assertTrue(result.getTotalElements() > 1);
+    }
+
+    @Test
+    void countAllByUsernames_AllUsersExist_ReturnsCount() {
+        // given
+        Collection<String> usernames = List.of("Artem", "Dima", "Pavel");
+
+        // when
+        int count = this.userRepository.countAllByUsernames(usernames);
+
+        // then
+        assertEquals(3, count);
+    }
+
+    @Test
+    void countAllByUsernames_SomeUsersExist_ReturnsPartialCount() {
+        // given
+        Collection<String> usernames = List.of("Artem", "Dima", "NonExistentUser");
+
+        // when
+        int count = this.userRepository.countAllByUsernames(usernames);
+
+        // then
+        assertEquals(2, count);
+    }
+
+    @Test
+    void countAllByUsernames_NoUsersExist_ReturnsZero() {
+        // given
+        Collection<String> usernames = List.of("Unknown1", "Unknown2");
+
+        // when
+        int count = this.userRepository.countAllByUsernames(usernames);
+
+        // then
+        assertEquals(0, count);
     }
 }
