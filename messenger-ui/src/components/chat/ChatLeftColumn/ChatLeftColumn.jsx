@@ -1,7 +1,7 @@
 import React from 'react';
 import {Col} from "antd";
-import ChatList from "./ChatList";
 import LeftColumnHeader from "./LeftColumnHeader";
+import ChatList from "./ChatList/ChatList";
 
 const ChatLeftColumn = () => {
     return (

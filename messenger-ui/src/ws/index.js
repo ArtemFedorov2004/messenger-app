@@ -19,14 +19,31 @@ export default class StompClient {
         };
 
         this.client.connect(headers, () => {
-            this.client.subscribe(`/user/${this.username}/queue/notifications`, (payload) => {
+            this.client.subscribe(`/user/${this.username}/queue/private-chat-notifications`, (payload) => {
                 const notification = JSON.parse(payload.body);
-                this.handleNotification(notification);
+                this.handlePrivateChatNotification(notification);
+            });
+            this.client.subscribe(`/user/${this.username}/queue/message-notifications`, (payload) => {
+                const notification = JSON.parse(payload.body);
+                this.handleMessageNotification(notification);
             });
         });
     }
 
-    handleNotification(notification) {
+    handlePrivateChatNotification(notification) {
+        switch (notification.type) {
+            case 'NEW_CHAT':
+                this.chatStore.addCreatedChat(notification.chat);
+                break;
+            case 'EDIT_CHAT':
+                this.chatStore.editChat(notification.chat);
+                break;
+            default:
+                console.warn('Unknown notification type:', notification.type);
+        }
+    }
+
+    handleMessageNotification(notification) {
         switch (notification.type) {
             case 'NEW_MESSAGE':
                 this.chatStore.addMessage(notification.message);
@@ -37,11 +54,8 @@ export default class StompClient {
             case 'DELETE_MESSAGE':
                 this.chatStore.deleteMessage(notification.message);
                 break;
-            case 'NEW_CHAT':
-                this.chatStore.addChat(notification.chat);
-                break;
             default:
-                console.warn('Unknown event type:', notification.type);
+                console.warn('Unknown notification type:', notification.type);
         }
     }
 

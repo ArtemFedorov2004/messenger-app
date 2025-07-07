@@ -8,7 +8,7 @@ const UsersSearchList = ({loading, users, pagination}) => {
             itemLayout="horizontal"
             loading={loading}
             dataSource={users}
-            renderItem={(user) => <SearchUserItem user={user}/>}
+            renderItem={(user) => <SearchUserItem userItem={user}/>}
             locale={{
                 emptyText: 'Пользователи не найдены'
             }}
