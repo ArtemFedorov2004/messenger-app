@@ -5,12 +5,14 @@ import io.github.artemfedorov2004.messengerserver.controller.payload.Registratio
 import io.github.artemfedorov2004.messengerserver.controller.payload.TokensPayload;
 import io.github.artemfedorov2004.messengerserver.exception.MissingRefreshTokenCookieException;
 import io.github.artemfedorov2004.messengerserver.service.AuthenticationService;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.validation.BindException;
@@ -18,6 +20,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.MapBindingResult;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -181,6 +184,42 @@ class AuthenticationRestControllerTest {
                 this.controller.refresh(request, response));
 
         // then
+        verifyNoInteractions(this.authenticationService);
+    }
+
+    @Test
+    void refresh_WithInvalidRefreshTokenCookie_ThrowsJwtException() {
+        // given
+        Cookie refreshCookie = new Cookie(AuthenticationRestController.REFRESH_TOKEN_COOKIE_NAME, "invalid.token");
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCookies(refreshCookie);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        doThrow(new JwtException("token is invalid"))
+                .when(this.authenticationService).refresh("invalid.token");
+
+        // when
+        assertThrows(JwtException.class, () ->
+                this.controller.refresh(request, response));
+
+        // then
+        verify(this.authenticationService).refresh("invalid.token");
+        verifyNoMoreInteractions(this.authenticationService);
+    }
+
+    @Test
+    void handleJwtException_ReturnsUnauthorized() {
+        // given
+        var exception = new JwtException("token is invalid");
+
+        // when
+        var result = this.controller.handleJwtException(exception);
+
+        // then
+        assertNotNull(result);
+        assertEquals(HttpStatus.UNAUTHORIZED, result.getStatusCode());
+
         verifyNoInteractions(this.authenticationService);
     }
 }

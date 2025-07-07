@@ -195,7 +195,7 @@ class AuthenticationRestControllerIT {
     }
 
     @Test
-    void refresh_WithoutRefreshToken_ReturnsUnauthorized() throws Exception {
+    void refresh_WithoutRefreshToken_ReturnsBadRequest() throws Exception {
         // given
         var requestBuilder = MockMvcRequestBuilders.post("/api/refresh")
                 .locale(Locale.of("ru", "RU"));
@@ -215,6 +215,26 @@ class AuthenticationRestControllerIT {
                                   "detail": "Refresh token не найден",
                                   "instance": "/api/refresh"
                                 }""")
+                );
+    }
+
+    @Test
+    void refresh_RefreshTokenInvalid_ReturnsUnauthorized() throws Exception {
+        // given
+        var requestBuilder = MockMvcRequestBuilders.post("/api/refresh")
+                .cookie(new Cookie("refreshToken",
+                        "eyJhbGciOiJIUzUxMiJ9.eyJyb2xlIjoiUk9MRV9VU0VSIiwiZW1haW" +
+                        "wiOiJhQGEuY29tIiwic3ViIjoiQXJ0ZW0iLCJpYXQiOjE3NTE4NzY5ODMsImV" +
+                        "4cCI6MTc1MTg3Njk4M30.2niZk_-fYPy8q6RLKTo1GXZpEclPRD557RSMoayA" +
+                        "Z-piv6_EhZYUa8OMVkdamYny1x0dCZKfflNSWVPEzL9K1Q"))
+                .locale(Locale.of("ru", "RU"));
+
+        // when
+        this.mockMvc.perform(requestBuilder)
+                // then
+                .andDo(print())
+                .andExpectAll(
+                        status().isUnauthorized()
                 );
     }
 

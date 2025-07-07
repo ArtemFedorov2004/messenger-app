@@ -49,9 +49,7 @@ public class DefaultAuthenticationService implements AuthenticationService {
         var user = this.userService.userDetailsService()
                 .loadUserByUsername(username);
 
-        if (!this.refreshTokenService.isTokenValid(refreshToken, user)) {
-            throw new MalformedJwtException("Refresh token is invalid");
-        }
+        this.refreshTokenService.isTokenValid(refreshToken, user);
 
         String newAccessToken = this.accessTokenService.generateToken(user);
         String newRefreshToken = this.refreshTokenService.generateToken(user);

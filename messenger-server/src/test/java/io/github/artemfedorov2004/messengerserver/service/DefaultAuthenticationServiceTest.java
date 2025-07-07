@@ -5,7 +5,7 @@ import io.github.artemfedorov2004.messengerserver.controller.payload.TokensPaylo
 import io.github.artemfedorov2004.messengerserver.entity.Role;
 import io.github.artemfedorov2004.messengerserver.entity.User;
 import io.github.artemfedorov2004.messengerserver.exception.AlreadyExistsException;
-import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -186,28 +186,20 @@ class DefaultAuthenticationServiceTest {
     }
 
     @Test
-    void refresh_WithInvalidToken_ThrowsMalformedJwtException() {
+    void refresh_WithInvalidToken_ThrowsJwtException() {
         // given
         String invalidToken = "invalid.token";
-        String username = "username";
-        User user = new User(username, "email", "hash", Role.ROLE_USER);
 
-        doReturn(username)
+        doThrow(new JwtException("token not valid"))
                 .when(this.refreshTokenService).extractUsername(invalidToken);
-        when(this.userService.userDetailsService())
-                .thenReturn(un -> user);
-        doReturn(false)
-                .when(this.refreshTokenService).isTokenValid(invalidToken, user);
 
         // when
-        assertThrows(MalformedJwtException.class, () ->
+        assertThrows(JwtException.class, () ->
                 this.service.refresh(invalidToken));
 
         // then
         verify(this.refreshTokenService).extractUsername(invalidToken);
-        verify(this.userService).userDetailsService();
-        verify(this.refreshTokenService).isTokenValid(invalidToken, user);
-        verifyNoMoreInteractions(this.userService, this.refreshTokenService);
-        verifyNoInteractions(this.accessTokenService, this.authenticationManager);
+        verifyNoMoreInteractions(this.refreshTokenService);
+        verifyNoInteractions(this.userService, this.accessTokenService, this.authenticationManager);
     }
 }

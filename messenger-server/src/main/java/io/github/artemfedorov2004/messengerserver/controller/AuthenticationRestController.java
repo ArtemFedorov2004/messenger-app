@@ -5,18 +5,18 @@ import io.github.artemfedorov2004.messengerserver.controller.payload.Registratio
 import io.github.artemfedorov2004.messengerserver.controller.payload.TokensPayload;
 import io.github.artemfedorov2004.messengerserver.exception.MissingRefreshTokenCookieException;
 import io.github.artemfedorov2004.messengerserver.service.AuthenticationService;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -95,5 +95,11 @@ public class AuthenticationRestController {
         cookie.setHttpOnly(true);
         cookie.setMaxAge(maxAge);
         response.addCookie(cookie);
+    }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<?> handleJwtException(JwtException exception) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .build();
     }
 }
