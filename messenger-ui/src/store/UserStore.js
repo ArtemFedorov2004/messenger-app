@@ -1,6 +1,7 @@
 import {makeAutoObservable} from "mobx";
 import AuthService from "../service/AuthService";
 import UserService from "../service/UserService";
+import {jwtDecode} from "jwt-decode";
 
 export default class UserStore {
     constructor() {
@@ -62,9 +63,11 @@ export default class UserStore {
     async checkAuth() {
         try {
             const response = await AuthService.refresh();
-            localStorage.setItem('token', response.data.accessToken);
+            const accessToken = response.data.accessToken;
+            localStorage.setItem('token', accessToken);
             this.setIsAuth(true);
-            await this.fetchUser();
+            const username = jwtDecode(accessToken).sub;
+            await this.fetchUser(username);
         } catch (e) {
             console.error(e);
         }
