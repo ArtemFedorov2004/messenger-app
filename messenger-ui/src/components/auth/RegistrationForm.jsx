@@ -14,13 +14,24 @@ const RegistrationForm = observer(() => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [usernameErrors, setUsernameErrors] = useState(null);
+    const [emailErrors, setEmailErrors] = useState(null);
 
     const submit = async () => {
         setIsLoading(true)
         try {
             await user.registration(username, email, password)
         } catch (e) {
-            console.error(e.response.data)
+            const response = e.response
+            if (response?.status == 400) {
+                const {detail} = response.data
+                if (detail.includes('Имя пользователя')) {
+                    setUsernameErrors(detail)
+                } else if (detail.includes('Адрес электронной почты')) {
+                    setEmailErrors(detail)
+                }
+            }
+
         } finally {
             setIsLoading(false)
         }
@@ -32,8 +43,10 @@ const RegistrationForm = observer(() => {
             onFinish={submit}
         >
             <h1 style={{textAlign: 'center'}}>Регистрация</h1>
-            <UsernameInput username={username} setUsername={setUsername}/>
-            <EmailInput email={email} setEmail={setEmail}/>
+            <UsernameInput username={username} setUsername={setUsername} errors={usernameErrors}
+                           setErrors={setUsernameErrors}/>
+            <EmailInput email={email} setEmail={setEmail} errors={emailErrors}
+                        setErrors={setEmailErrors}/>
             <PasswordInput password={password} setPassword={setPassword}/>
             <Form.Item>
                 <Button block type="primary" htmlType="submit" loading={isLoading}>
