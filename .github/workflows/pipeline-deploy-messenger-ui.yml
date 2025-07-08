@@ -39,7 +39,7 @@ jobs:
       - name: Build image & Push to DockerHub
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: messenger-ui
           file: messenger-ui/Dockerfile
           push: true
           platforms: linux/amd64
