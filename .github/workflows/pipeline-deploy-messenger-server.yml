@@ -83,15 +83,15 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: messenger-server
-          file: Dockerfile
+          context: .
+          file: messenger-server/Dockerfile
           push: true
           platforms: linux/amd64
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/messenger-server:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/messenger-server:${{ steps.extract_version.outputs.VERSION }}
           build-args: |
-            JAR_FILE=target/messenger-server-${{ steps.extract_version.outputs.VERSION }}-exec.jar
+            JAR_FILE=messenger-server/target/messenger-server-${{ steps.extract_version.outputs.VERSION }}-exec.jar
 
   deploy:
     name: Deploy to VPS
