@@ -1,13 +1,12 @@
 spring:
-  data:
-    mongodb:
-      username: user
-      password: q
-      host: localhost
-      port: 27017
-      database: messenger
-      authentication-database: admin
-      auto-index-creation: true
+  datasource:
+    url: jdbc:postgresql://localhost:5433/messenger
+    username: admin
+    password: admin
+  flyway:
+    schemas:
+      - public
+      - messenger
 allowed-origins: http://localhost:3000
 access-token:
   signing-key: 62bfb1c719a04dd7b94fe4a257fb074e1c530d0f118f588fc23d008190fe06fec27c26b875057f4e85b1fc3

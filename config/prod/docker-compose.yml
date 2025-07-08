@@ -1,0 +1,38 @@
+name: messenger
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: messenger
+    networks:
+      - messenger-network
+  server:
+    image: artem20fedorov00/messenger-server
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    depends_on:
+      - db
+    networks:
+      - messenger-network
+  ui:
+    image: artem20fedorov00/messenger-ui
+    restart: always
+    depends_on:
+      - server
+    networks:
+      - messenger-network
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - './nginx.conf:/etc/nginx/nginx.conf'
+    depends_on:
+      - ui
+    networks:
+      - messenger-network
+networks:
+  messenger-network:

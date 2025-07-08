@@ -84,10 +84,14 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: messenger-server
-          file: messenger-server/Dockerfile
+          file: Dockerfile
           push: true
           platforms: linux/amd64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/messenger-server:latest,${{ secrets.DOCKERHUB_USERNAME }}/messenger-server:${{ steps.extract_version.outputs.VERSION }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/messenger-server:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/messenger-server:${{ steps.extract_version.outputs.VERSION }}
+          build-args: |
+            JAR_FILE=target/messenger-server-${{ steps.extract_version.outputs.VERSION }}-exec.jar
 
   deploy:
     name: Deploy to VPS
@@ -114,7 +118,9 @@ jobs:
         run: ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} "mkdir -p messenger-app"
 
       - name: Copy docker-compose file
-        run: scp docker-compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/docker-compose.yml
+        run: |
+          cd config/prod
+          scp docker-compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/docker-compose.yml
 
       - name: Deploy Application to VPS
         run: |

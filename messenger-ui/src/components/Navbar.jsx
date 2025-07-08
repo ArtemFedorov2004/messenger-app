@@ -6,12 +6,12 @@ import {observer} from "mobx-react-lite";
 import {Context} from "../index";
 
 const Navbar = observer(() => {
-    const {user} = useContext(Context)
+    const {user, chat} = useContext(Context)
     const navigate = useNavigate();
 
-    const logout = () => {
-        user.setUser({})
-        user.setIsAuth(false)
+    const logout = async () => {
+        await user.logout()
+        chat.resetStore()
     }
 
     return (

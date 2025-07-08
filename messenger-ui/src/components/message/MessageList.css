@@ -1,5 +1,12 @@
 .message-list {
     height: calc(100vh - 104px);
+    overflow: auto;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.infinite-scroll {
+    display: flex;
+    flex-direction: column-reverse;
     padding: 20px;
-    overflow-y: scroll;
 }

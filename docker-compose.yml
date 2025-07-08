@@ -1,45 +1,43 @@
+name: messenger
 services:
-  mongo-db:
-    image: mongo:8.0.6
-    container_name: mongo-db
-    volumes:
-      - mongo:/data
+  db:
+    image: postgres:16
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=password
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: messenger
     networks:
       - messenger-network
-
-  messenger-server:
-    image: artem20fedorov00/messenger-server
-    container_name: messenger-server
+  server:
+    restart: always
+    build:
+      dockerfile: ./messenger-server/Dockerfile
+      args:
+        JAR_FILE: messenger-server/target/messenger-server-0.0.1-SNAPSHOT-exec.jar
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
     depends_on:
-      - mongo-db
+      - db
     networks:
       - messenger-network
-
+  ui:
+    restart: always
+    build:
+      context: ./messenger-ui
+      dockerfile: Dockerfile
+    depends_on:
+      - server
+    networks:
+      - messenger-network
   nginx:
     image: nginx:stable-alpine
-    container_name: nginx
     ports:
       - "80:80"
     volumes:
       - './nginx.conf:/etc/nginx/nginx.conf'
     depends_on:
-      - messenger-ui
+      - ui
     networks:
       - messenger-network
-
-  messenger-ui:
-    image: artem20fedorov00/messenger-ui
-    container_name: messenger-ui
-    depends_on:
-      - messenger-server
-    networks:
-      - messenger-network
-
 networks:
   messenger-network:
-
-volumes:
-  mongo: { }

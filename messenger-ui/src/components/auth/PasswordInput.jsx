@@ -7,7 +7,7 @@ const PasswordInput = ({password, setPassword}) => {
     return (
         <Form.Item
             name="password"
-            rules={[rules.required("Пожалуйста введите пароль")]}
+            rules={rules.password()}
         >
             <Input
                 prefix={<LockOutlined/>}

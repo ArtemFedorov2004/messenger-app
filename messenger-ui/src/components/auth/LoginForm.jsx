@@ -1,5 +1,5 @@
 import React, {useContext, useState} from 'react';
-import {Button, Form} from "antd";
+import {Alert, Button, Form} from "antd";
 import {Link} from "react-router-dom";
 import {REGISTRATION_ROUTE} from "../../utils/consts";
 import UsernameInput from "./UsernameInput";
@@ -12,18 +12,20 @@ const LoginForm = observer(() => {
     const [isLoading, setIsLoading] = useState(false);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState(null);
 
     const submit = async () => {
         setIsLoading(true)
         try {
             await user.login(username, password)
         } catch (e) {
-            console.error(e.response.data)
+            if (e.response?.status === 401) {
+                setError('Неверное имя пользователя или пароль');
+            }
         } finally {
             setIsLoading(false)
         }
     }
-
 
     return (
         <Form
@@ -31,6 +33,16 @@ const LoginForm = observer(() => {
             onFinish={submit}
         >
             <h1 style={{textAlign: 'center'}}>Вход</h1>
+            {error && (
+                <Alert
+                    message={error}
+                    type="error"
+                    showIcon
+                    style={{marginBottom: 24}}
+                    closable
+                    onClose={() => setError(null)}
+                />
+            )}
             <UsernameInput username={username} setUsername={setUsername}/>
             <PasswordInput password={password} setPassword={setPassword}/>
             <Form.Item>

@@ -1,4 +1,4 @@
-name: deploy messenger ui
+name: Deploy messenger ui
 
 on:
   push:
@@ -11,6 +11,9 @@ jobs:
   build-image:
     name: Build Docker image
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./messenger-ui
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,22 +22,30 @@ jobs:
       - name: Extract project version
         id: extract_version
         run: |
-          cd messenger-ui
           echo "VERSION=$(jq -r '.version' package.json)" >> $GITHUB_OUTPUT
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Build project
+        run: CI=false npm run build
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build & Push to DockerHub
+      - name: Build image & Push to DockerHub
         uses: docker/build-push-action@v5
         with:
-          context: messenger-ui
-          file: messenger-ui/Dockerfile
+          context: .
+          file: Dockerfile
           push: true
           platforms: linux/amd64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/messenger-ui:latest,${{ secrets.DOCKERHUB_USERNAME }}/messenger-ui:${{ steps.extract_version.outputs.VERSION }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/messenger-ui:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/messenger-ui:${{ steps.extract_version.outputs.VERSION }}
 
   deploy:
     name: Deploy
@@ -61,10 +72,14 @@ jobs:
         run: ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} "mkdir -p messenger-app"
 
       - name: Copy docker-compose file
-        run: scp docker-compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/docker-compose.yml
+        run: |
+          cd config/prod
+          scp docker-compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/docker-compose.yml
 
       - name: Copy nginx.conf file
-        run: scp nginx.conf ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/nginx.conf
+        run: |
+          cd config/prod
+          scp nginx.conf ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/nginx.conf
 
       - name: Deploy to VPS
         run: |

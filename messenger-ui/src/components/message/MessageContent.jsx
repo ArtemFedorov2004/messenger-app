@@ -1,7 +1,7 @@
-import React, {useContext} from 'react';
-import './MessageContent.css';
 import {observer} from "mobx-react-lite";
+import React, {useContext} from "react";
 import {Context} from "../../index";
+import './MessageContent.css';
 
 const MessageContent = observer(({message}) => {
     const {user} = useContext(Context);

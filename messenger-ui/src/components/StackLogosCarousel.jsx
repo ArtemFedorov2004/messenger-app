@@ -1,7 +1,7 @@
 import React from 'react';
 import javaLogo from "../assets/stack-logos/java-logo.png";
 import springBootLogo from "../assets/stack-logos/spring-boot-logo.png";
-import mongodbLogo from "../assets/stack-logos/mongodb-logo.png";
+import postgresqlLogo from "../assets/stack-logos/postgresql-logo.png";
 import javaScriptLogo from "../assets/stack-logos/javascript-logo.png";
 import reactLogo from "../assets/stack-logos/react-logo.png";
 import htmlLogo from "../assets/stack-logos/html-logo.png";
@@ -13,7 +13,7 @@ import {Carousel, Col, Image} from "antd";
 
 const StackLogosCarousel = () => {
     const logos = [
-        javaLogo, springBootLogo, mongodbLogo, javaScriptLogo, reactLogo,
+        javaLogo, springBootLogo, postgresqlLogo, javaScriptLogo, reactLogo,
         htmlLogo, cssLogo, dockerLogo, nginxLogo, tomcatLogo
     ]
 

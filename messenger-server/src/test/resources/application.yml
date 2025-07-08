@@ -1,3 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:16://messenger?TC_DAEMON=true
+    username: admin
+    password: admin
 access-token:
   signing-key: 62bfb1c719a04dd7b94fe4a257fb074e1c530d0f118f588fc23d008190fe06fec27c26b875057f4e85b1fc3
   ttl: 60000
