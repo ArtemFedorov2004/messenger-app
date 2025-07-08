@@ -32,9 +32,10 @@
 * Пароль (обязательное поле)
 * Роль (обязательное поле, значения: ROLE_USER/ROLE_ADMIN)
 
-* **Особенности:**
-    * Реализует UserDetails для интеграции с Spring Security
-    * Роли хранятся как `varchar(50)`
+**Особенности:**
+
+* Реализует UserDetails для интеграции с Spring Security
+* Роли хранятся как `varchar(50)`
 
 **Чат (`Chat`)**
 
@@ -42,8 +43,9 @@
 
 * Уникальный идентификатор
 
-* **Связи:**
-    * Многие-ко-многим с User
+**Связи:**
+
+* Многие-ко-многим с User
 
 **Сообщение (`Message`)**
 
@@ -53,9 +55,10 @@
 * Дату создания (`timestamp`, обязательный)
 * Дату редактирования (`timestamp`)
 
-* **Связи:**
-    * Многие-к-одному с Chat через
-    * Многие-к-одному с User (отправитель)
+**Связи:**
+
+* Многие-к-одному с Chat через
+* Многие-к-одному с User (отправитель)
 
 ### Миграции базы данных (Flyway)
 
@@ -77,8 +80,8 @@
 
 **Эндпоинты**
 
-1. **POST** `/api/registration`
-   Регистрация нового пользователя.
+**POST** `/api/registration`
+Регистрация нового пользователя.
 
 **Данные запроса (RegistrationPayload):**
 
@@ -107,8 +110,8 @@
     * Если данные не прошли валидацию
     * Если имя пользователя или email уже заняты
 
-2. **POST** `/api/login`
-   Авторизация существующего пользователя.
+**POST** `/api/login`
+Авторизация существующего пользователя.
 
 **Данные запроса (LoginPayload):**
 
@@ -135,8 +138,7 @@
 * `400 Bad Request`: Если данные не прошли валидацию
 * `401 Unauthorized`: Если неверные учетные данные
 
-3. **POST** `/api/logout`
-
+**POST** `/api/logout`
 Выход из системы.
 
 **Запрос:** Без тела
@@ -146,8 +148,7 @@
 * `200 OK`: Пустой ответ
 * Очищает куку `refreshToken` (устанавливает maxAge=`0`)
 
-4. **POST** `/api/refresh`
-
+**POST** `/api/refresh`
 Обновление access-токена с помощью refresh-токена.
 
 **Запрос:**
@@ -190,7 +191,7 @@
 
 **Формат ответа (200 OK):**
 
-```json
+```
 {
   "content": [
     {
@@ -236,13 +237,13 @@
 
 **Эндпоинты:**
 
-1. **GET `/api/private-chats` - Получение списка чатов пользователя**
+**GET `/api/private-chats` - Получение списка чатов пользователя**
 
 **Логика:**
 
 * Возвращает все приватные чаты, где текущий пользователь участник
 
-2. **POST `/api/private-chats` - Создание нового приватного чата**
+**POST `/api/private-chats` - Создание нового приватного чата**
 
 **Тело запроса:**
 
@@ -274,7 +275,7 @@
 
 **Эндпоинты:**
 
-1. **GET `/api/private-chats/{chatId}/messages` - Получение сообщений чата**
+**GET `/api/private-chats/{chatId}/messages` - Получение сообщений чата**
 
 **Параметры:**
 
@@ -286,7 +287,7 @@
 
 * Только участники чата могут видеть сообщения (иначе 403 Forbidden)
 
-2. **POST `/api/private-chats/{chatId}/messages` - Создание нового сообщения**
+**POST `/api/private-chats/{chatId}/messages` - Создание нового сообщения**
 
 **Тело запроса:**
 
@@ -319,7 +320,7 @@
 
 **Эндпоинты:**
 
-1. **PATCH `/api/private-chat-messages/{messageId}` - Редактирование сообщения**
+**PATCH `/api/private-chat-messages/{messageId}` - Редактирование сообщения**
 
 **Тело запроса:**
 
@@ -335,7 +336,7 @@
 
 **Успешный ответ (200 OK):** Обновленное сообщение
 
-2. **DELETE `/api/private-chat-messages/{messageId}` - Удаление сообщения**
+**DELETE `/api/private-chat-messages/{messageId}` - Удаление сообщения**
 
 **Правила доступа:**
 
@@ -363,26 +364,25 @@ Problem Details:
 **Зависимости**
 
 ```xml
-
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-security</artifactId>
 </dependency>
-        <!-- JWT зависимости -->
+<!-- JWT зависимости -->
 <dependency>
-<groupId>io.jsonwebtoken</groupId>
-<artifactId>jjwt-api</artifactId>
-<version>0.12.3</version>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-api</artifactId>
+    <version>0.12.3</version>
 </dependency>
 <dependency>
-<groupId>io.jsonwebtoken</groupId>
-<artifactId>jjwt-impl</artifactId>
-<version>0.12.3</version>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-impl</artifactId>
+    <version>0.12.3</version>
 </dependency>
 <dependency>
-<groupId>io.jsonwebtoken</groupId>
-<artifactId>jjwt-jackson</artifactId>
-<version>0.12.3</version>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-jackson</artifactId>
+    <version>0.12.3</version>
 </dependency>
 ```
 
