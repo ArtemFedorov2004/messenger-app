@@ -1,3 +1,536 @@
+# Мессенджер на React и Spring boot
+
+## Стек технологий
+
+**Бэкенд:**
+
+* Spring Boot 3.x
+* PostgreSQL
+* Flyway (миграции)
+* Lombok
+* WebSockets
+* Testcontainers
+
+**Фронтенд:**
+
+* React
+* Ant Design (UI)
+* MobX (state management)
+
+## Серверная часть (Spring Boot)
+
+### Модель данных
+
+**Сущности**
+
+**Пользователь (`User`)**
+
+Каждый пользователь в системе содержит:
+
+* Уникальное имя
+* Почту (уникальное, обязательное поле)
+* Пароль (обязательное поле)
+* Роль (обязательное поле, значения: ROLE_USER/ROLE_ADMIN)
+
+**Особенности:**
+
+* Реализует UserDetails для интеграции с Spring Security
+* Роли хранятся как `varchar(50)`
+
+**Чат (`Chat`)**
+
+Содержит:
+
+* Уникальный идентификатор
+
+**Связи:**
+
+* Многие-ко-многим с User
+
+**Сообщение (`Message`)**
+
+Сообщение включает:
+
+* Контент (текст, обязательный, длина >= `1`)
+* Дату создания (`timestamp`, обязательный)
+* Дату редактирования (`timestamp`)
+
+**Связи:**
+
+* Многие-к-одному с Chat через
+* Многие-к-одному с User (отправитель)
+
+### Миграции базы данных (Flyway)
+
+Система использует Flyway для управления миграциями базы данных. Все объекты базы данных создаются в схеме `messenger`.
+
+Скрипты расположены в `db/migration`:
+
+**`V0.0.1__Basic_schema.sql `- Базовая схема.**
+
+### ORM
+
+Система использует **Java Persistence API (JPA)** с реализацией **Hibernate** для работы с базой данных.
+
+### REST API
+
+**AuthenticationRestController**
+
+Контроллер для операций аутентификации.
+
+**Эндпоинты**
+
+**POST** `/api/registration`
+Регистрация нового пользователя.
+
+**Данные запроса (RegistrationPayload):**
+
+```json
+{
+  "username": "string (required, not blank)",
+  "email": "string (required, valid email format)",
+  "password": "string (required, min 8 characters)"
+}
+```
+
+**Успешный ответ (200 OK):**
+
+```json
+{
+  "accessToken": "string",
+  "refreshToken": "string"
+}
+```
+
+* Устанавливает HTTP-only куку `refreshToken` с refresh-токеном
+
+**Ошибки:**
+
+* **400 Bad Request:**
+    * Если данные не прошли валидацию
+    * Если имя пользователя или email уже заняты
+
+**POST** `/api/login`
+Авторизация существующего пользователя.
+
+**Данные запроса (LoginPayload):**
+
+```json
+{
+  "username": "string (required, not blank)",
+  "password": "string (required, min 8 characters)"
+}
+```
+
+**Успешный ответ (200 OK):**
+
+```json
+{
+  "accessToken": "string",
+  "refreshToken": "string"
+}
+```
+
+* Устанавливает HTTP-only куку `refreshToken`
+
+**Ошибки:**
+
+* `400 Bad Request`: Если данные не прошли валидацию
+* `401 Unauthorized`: Если неверные учетные данные
+
+**POST** `/api/logout`
+Выход из системы.
+
+**Запрос:** Без тела
+
+**Ответ:**
+
+* `200 OK`: Пустой ответ
+* Очищает куку `refreshToken` (устанавливает maxAge=`0`)
+
+**POST** `/api/refresh`
+Обновление access-токена с помощью refresh-токена.
+
+**Запрос:**
+
+* Требуется кука `refreshToken`
+
+**Успешный ответ (200 OK):**
+
+```json
+{
+  "accessToken": "string",
+  "refreshToken": "string"
+}
+```
+
+* Устанавливает новую куку `refreshToken` с обновленным токеном
+
+**Ошибки:**
+
+* `400 Bad Request`: Если отсутствует кука `refreshToken`
+* `401 Unauthorized`: Если refresh-токен невалиден
+
+**UsersRestController**
+
+Контроллер для поиска пользователей.
+
+**Эндпоинт:** GET `/api/users`
+
+**Параметры запроса:**
+
+* `query` (необязательный) - строка для поиска пользователей
+* `page` (по умолчанию `0`) - номер страницы
+* `size` (по умолчанию `5`) - количество элементов на странице
+
+**Логика работы:**
+
+1. Если `query` не указан или пуст - возвращает пустую страницу (`Page.empty()`)
+2. Ищет пользователей по запросу, исключая текущего пользователя
+3. Возвращает результаты с пагинацией
+
+**Формат ответа (200 OK):**
+
+```
+{
+  "content": [
+    {
+      "username": "string",
+      "email": "string"
+    }
+    // ... другие пользователи
+  ],
+  "pageable": {
+    // стандартная информация о пагинации
+  }
+}
+```
+
+**UserRestController**
+
+Контроллер для получения информации о конкретном пользователе.
+
+**Эндпоинт:** GET `/api/users/{username}`
+
+**Параметры:**
+
+* `username` - имя пользователя в URL
+
+**Логика работы:**
+
+1. Находит пользователя по username
+2. Если пользователь не найден - возвращает 404 Not Found
+3. Возвращает данные пользователя
+
+**Формат ответа (200 OK):**
+
+```json
+{
+  "username": "string",
+  "email": "string"
+}
+```
+
+**PrivateChatsRestController**
+
+Контроллер для работы с приватными чатами.
+
+**Эндпоинты:**
+
+**GET `/api/private-chats` - Получение списка чатов пользователя**
+
+**Логика:**
+
+* Возвращает все приватные чаты, где текущий пользователь участник
+
+**POST `/api/private-chats` - Создание нового приватного чата**
+
+**Тело запроса:**
+
+```json
+{
+  "participantName": "string (required, not blank)"
+}
+```
+
+**Валидация:**
+
+* Участник не может быть текущим пользователем (400 Bad Request)
+* Участник должен существовать (400 Bad Request)
+* Чат между этими пользователями не должен существовать (400 Bad Request)
+
+**Успешный ответ (201 Created):**
+
+```json
+{
+  "id": "number",
+  "participantName": "string",
+  "lastMessage": "object"
+}
+```
+
+**MessagesRestController**
+
+Контроллер для работы с сообщениями в чатах.
+
+**Эндпоинты:**
+
+**GET `/api/private-chats/{chatId}/messages` - Получение сообщений чата**
+
+**Параметры:**
+
+* `chatId` - id чата в URL
+* `page` (по умолчанию `0`) - номер страницы
+* `size` (по умолчанию `20`) - количество сообщений на странице
+
+**Правила доступа:**
+
+* Только участники чата могут видеть сообщения (иначе 403 Forbidden)
+
+**POST `/api/private-chats/{chatId}/messages` - Создание нового сообщения**
+
+**Тело запроса:**
+
+```json
+{
+  "content": "string (required, not blank)"
+}
+```
+
+**Правила доступа:**
+
+* Только участники чата могут отправлять сообщения (403 Forbidden)
+
+**Успешный ответ (201 Created):**
+
+```json
+{
+  "id": "number",
+  "chatId": "number",
+  "senderName": "string",
+  "content": "string",
+  "createdAt": "timestamp",
+  "editedAt": "timestamp"
+}
+```
+
+**MessageRestController**
+
+Контроллер для управления конкретными сообщениями.
+
+**Эндпоинты:**
+
+**PATCH `/api/private-chat-messages/{messageId}` - Редактирование сообщения**
+
+**Тело запроса:**
+
+```json
+{
+  "content": "string (required, not blank)"
+}
+```
+
+**Правила доступа:**
+
+* Только автор сообщения может его редактировать (403 Forbidden)
+
+**Успешный ответ (200 OK):** Обновленное сообщение
+
+**DELETE `/api/private-chat-messages/{messageId}` - Удаление сообщения**
+
+**Правила доступа:**
+
+* Только автор сообщения может его удалить (403 Forbidden)
+
+**Успешный ответ:** 204 No Content
+
+### Локализация и обработка ошибок
+
+Система поддерживает локализацию сообщений об ошибках (в настоящее время только на русском языке). Все входящие данные
+проходят валидацию. Файл `messages.properties` содержит все сообщения об ошибках. Система возвращает ошибки в формате
+Problem Details:
+
+```json
+{
+  "title": "Not Found",
+  "status": 404,
+  "detail": "Пользователь не найден",
+  "instance": "/api/users/undefined"
+}
+```
+
+### Безопасность
+
+**Зависимости**
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+<!-- JWT зависимости -->
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-api</artifactId>
+    <version>0.12.3</version>
+</dependency>
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-impl</artifactId>
+    <version>0.12.3</version>
+</dependency>
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-jackson</artifactId>
+    <version>0.12.3</version>
+</dependency>
+```
+
+**Основные компоненты**
+
+1. `SecurityBeans` - главный класс конфигурации безопасности
+2. `JwtAuthenticationFilter` - фильтр для JWT аутентификации
+
+**Особенности реализации**
+
+**Фильтр JWT:**
+
+* Извлекает токен из заголовка Authorization
+* Проверяет валидность токена
+* Устанавливает аутентификацию в SecurityContext
+
+Используется `BCryptPasswordEncoder` для хеширования
+
+**Обработка ошибок безопасности**
+
+* `401 Unauthorized` - при проблемах аутентификации
+* `403 Forbidden` - при отсутствии прав доступа
+
+### WebSocket
+
+**Зависимость:**
+
+```xml
+
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-websocket</artifactId>
+</dependency>
+```
+
+**Конфигурация (`WebSocketConfig`):**
+
+* Endpoint: `/api/ws`
+* Префиксы:
+    * `/app` - для приема сообщений от клиентов
+    * `/user` - для персональных уведомлений
+* JWT аутентификация при подключении через STOMP
+
+**Система уведомлений**
+
+**Сервис (`DefaultNotificationService`):**
+
+* Отправляет уведомления через `SimpMessagingTemplate`
+* 2 типа каналов:
+    * `/queue/private-chat-notifications` - уведомления о чатах
+    * `/queue/message-notifications` - уведомления о сообщениях
+
+**Типы уведомлений:**
+
+1. **События чата:**
+    * `NEW_CHAT` - создан новый чат
+    * `EDIT_CHAT` - изменения в чате
+2. **События сообщений:**
+    * `NEW_MESSAGE` - новое сообщение
+    * `EDIT_MESSAGE` - редактирование сообщения
+    * `DELETE_MESSAGE` - удаление сообщения
+
+Логика работы:
+
+1. При действиях (создание/редактирование/удаление) сервис:
+    * Определяет получателей (другой участник чата)
+    * Формирует payload с данными
+    * Отправляет через WebSocket
+
+2. Клиенты подписываются на персональные очереди:
+    * `/user/queue/private-chat-notifications`
+    * `/user/queue/message-notifications`
+
+### Конфигурации
+
+**Профили Spring Boot:**
+
+1. `standalone` - Локальная разработка
+2. `docker` - Docker Compose
+3. `prod` - Для продакшн окружения
+
+### Запуск приложения
+
+**Локальная разработка**
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=standalone
+```
+
+**Docker**
+
+Сборка и запуск контейнера для текущей версии приложения (0.0.1-SNAPSHOT):
+
+```bash
+docker build --build-arg JAR_FILE=messenger-server/target/messenger-server-0.0.1-SNAPSHOT-exec.jar -t messenger/messenger-server:0.0.1 .
+docker run -p 8080:8080 -e SPRING_PROFILES_ACTIVE=docker --name messenger-server messenger/messenger-server:0.0.1
+```
+
+### Тестирование
+
+Запуск тестов
+
+```bash
+# Все тесты
+mvn clean verify
+
+# Только unit-тесты
+mvn clean test
+
+# Только интеграционные тесты
+mvn failsafe:integration-test
+```
+
+Для проверки работы с реальной базой данных используется Testcontainers.
+
+### Docker-образ для Spring Boot приложения
+
+Используется **многоэтапная сборка**:
+
+1. Этап распаковки: извлечение слоев JAR-файла
+2. Этап сборки: создание итогового образа
+
+**Распаковка JAR:**
+
+1. Принимает аргумент `JAR_FILE` (путь к jar-файлу)
+2. Использует Spring Boot Layertools для распаковки:
+
+* Разделяет на слои согласно` layers.idx`
+
+**Финальный образ:**
+
+* Создается отдельная группа `spring-boot-group`
+* Добавляется пользователь `spring-boot`
+* Все дальнейшие команды выполняются от этого пользователя
+
+Делаем это для того, чтобы все действия выполнялись в рамках данного контейнера от имени пользователя отличного от root
+
+**Запуск приложения:**
+
+* `${JAVA_OPTS}`: переменная для JVM-флагов
+* `${0} ${@}`: передача аргументов командной строки
+
+## PostgreSQL
+
+**Запуск PostgreSQL в Docker**
+
+Для локальной разработки база данных запускается следующей командой:
+
 ```bash
 docker run --name messenger-db -p 5433:5432 \
   -e POSTGRES_USER=admin \
@@ -5,3 +538,7 @@ docker run --name messenger-db -p 5433:5432 \
   -e POSTGRES_DB=messenger\
   postgres:16
 ```
+
+# Лицензия
+
+Apache License. Подробнее см. в файле [LICENSE](LICENSE).
