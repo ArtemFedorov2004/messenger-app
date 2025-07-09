@@ -529,6 +529,393 @@ mvn failsafe:integration-test
 * `${JAVA_OPTS}`: переменная для JVM-флагов
 * `${0} ${@}`: передача аргументов командной строки
 
+## Клиентская часть мессенджера (React)
+
+Использованы следующие технологий:
+
+* **State management:** MobX
+* **UI библиотека:** Ant Design
+* **Маршрутизация:** React Router
+* **HTTP клиент:** Axios
+* **WebSocket**
+
+### Страницы приложения
+
+1. **Главная страница (Home.jsx)**
+2. **Страница входа (Login.jsx)**
+3. **Страница регистрации (Registration.jsx)**
+4. **Страница чатов (Chat.jsx)**
+5. **Профиль пользователя (Profile.jsx)**
+
+### Система маршрутизации
+
+**Public routes (доступны без авторизации):**
+
+* `/` - Главная страница
+* `/login` - Страница входа
+* `/registration` - Страница регистрации
+
+Private routes (требуют авторизации):
+
+* `/chat` - Страница чатов
+* `/profile` - Профиль пользователя
+
+**Логика защиты маршрутов:**
+
+* При попытке доступа к приватному маршруту без авторизации - редирект на `/login`
+
+### Система аутентификации
+
+**HTTP клиенты**
+
+1. **Базовый клиент ($api)**
+2. **Авторизованный клиент ($authApi)**
+
+**Файл окружения (`.env`)**
+
+В корне проекта находится файл `.env`. Он содержит базовый URL API сервера - `REACT_APP_API_URL`.
+
+**Процесс входа пользователя**
+
+Когда пользователь вводит свои учетные данные на странице входа:
+
+1. Приложение отправляет логин и пароль на сервер
+2. Сервер проверяет данные и при успешной проверке:
+    * Возвращает access token в теле ответа
+    * Устанавливает refresh token в HTTP-only cookie
+3. Клиентское приложение сохраняет полученный access token в localStorage
+
+**Механизм проверки авторизации**
+
+При каждом запуске приложения:
+
+1. Проверяется наличие access token в localStorage
+2. Если токен присутствует:
+    * Отправляется запрос для обновления токена
+    * Если refresh token валиден, то сервер возвращает обновленные токены
+    * Загружаются данные пользователя
+
+**Работа с защищенными запросами**
+
+Для всех запросов, требующих авторизации:
+
+1. Приложение автоматически добавляет access token в заголовок Authorization
+2. Если токен просрочен (сервер возвращает ошибку 401):
+    * Приложение пытается один раз обновить токен, используя refresh token из cookie
+    * При успешном обновлении повторяет оригинальный запрос с новым токеном
+
+### Главная страница (Home.jsx)
+
+**Содержание:**
+
+* Описание проекта
+* Карусель с логотипами технологий
+* Ссылки на GitHub и контакты
+
+**Навбар:**
+
+* Отображает текущего пользователя (если авторизован)
+* Кнопки:
+    * "Перейти в чат" (для авторизованных)
+    * "Выйти" (для авторизованных)
+    * "Войти" (для не авторизованных)
+
+### Страница входа (Login.jsx)
+
+**Функциональность:**
+
+* Форма входа с валидацией полей
+* Обработка ошибок сервера
+* Переход на страницу регистрации
+
+**Элементы формы:**
+
+1. **Поле имени пользователя:**
+    * Обязательное поле
+2. **Поле пароля:**
+    * Обязательное поле
+    * Минимум 8 символов
+3. **Кнопка отправки:**
+    * Активируется только при валидной форме
+
+**Обработка ответа сервера**
+
+Успешный сценарий (200 OK):
+
+* Происходит перенаправление на страницу чатов (/chat)
+
+Ошибочный сценарий (401 Unauthorized):
+
+* Появляется красное уведомление: "Неверное имя пользователя или пароль"
+
+**Навигация:**
+
+* Ссылка на страницу регистрации
+
+### Страница регистрации (Registration.jsx)
+
+**Функциональность:**
+
+* Форма регистрации нового пользователя
+* Валидация всех полей
+* Обработка конфликтов данных
+
+**Поля формы:**
+
+1. Имя пользователя:
+    * Обязательное
+    * Уникальное (проверка на сервере)
+2. Email:
+    * Обязательное
+    * Валидный формат email
+    * Уникальный (проверка на сервере)
+3. Пароль:
+    * Обязательное
+    * Минимум 8 символов
+
+**Обработка ошибок:**
+
+* **400 статус:**
+    * "Имя пользователя уже занято"
+    * "Адрес электронной почты уже занят"
+
+* Ошибки отображаются в соответствующих полях
+
+**Навигация:**
+
+* Ссылка на страницу входа
+
+### Страница профиля (Profile.jsx)
+
+**Структура страницы:**
+
+* Заголовок "Профиль пользователя"
+* Аватар пользователя (стандартное изображение)
+* Карточка с данными пользователя
+* Поля:
+    * Имя пользователя
+    * Email
+
+### Страница чата (Chat.jsx)
+
+#### Общая структура интерфейса
+
+Страница чата разделена на два основных столбца:
+
+**Левый столбец (навигация)**
+
+1. **Меню пользователя** (Dropdown)
+2. **Кнопка поиска пользователей**
+3. **Список чатов пользователя**
+
+**Правый столбец (основное содержимое)**
+
+1. **Шапка чата** (информация о собеседнике)
+2. **Список сообщений** с бесконечной подгрузкой
+3. **Форма отправки сообщений**
+
+#### Детальное описание компонентов
+
+1. **Меню пользователя (Dropdown)**
+
+**Элементы меню:**
+
+* **Аккаунт** - перенаправляет на страницу профиля (`/profile`)
+* **Выйти** - выполняет выход из системы
+
+2. **Список чатов**
+
+**Особенности:**
+
+* Загружается при монтировании компонента
+* Подсвечивает выбранный чат
+* При клике обновляет правую часть интерфейса
+
+3. **Шапка чата (RightColumnHeader)**
+
+**Отображает:**
+
+* Аватар собеседника
+* Имя собеседника
+
+4. **Список сообщений (MessageList)**
+
+**Особенности реализации:**
+
+* Использует **Infinite Scroll** для подгрузки сообщений
+* Первоначально загружаются последние сообщения
+* При скролле вверх подгружаются более старые сообщения
+
+**Пагинация:**
+
+* Размер страницы: `MESSAGES_BATCH_SIZE`
+
+5. **Форма отправки сообщений**
+
+**Элементы:**
+
+* Поле ввода сообщения
+* Кнопка отправки (иконка бумажного самолетика)
+
+**Функционал:**
+
+* Отправка по клику или нажатию Enter
+
+6. **Контекстное меню сообщений**
+
+Для собственных сообщений доступно меню (по правому клику):
+
+* **Удалить** - удаляет сообщение
+* **Редактировать** - переносит текст сообщения в поле ввода
+
+#### Модальное окно поиска пользователей
+
+**Активация и отображение**
+
+Модальное окно появляется при нажатии на кнопку "Поиск" в левом столбце интерфейса чата. Оно реализовано с
+использованием компонента `Modal` из Ant Design. Закрывается при клике вне окна или на крестик.
+
+**Поле поиска**
+
+В верхней части модального окна расположен инпут для ввода поискового запроса.
+
+**Особенности работы:**
+
+1. Пользователь начинает вводить текст (имя или email)
+2. Применяется debounce с задержкой 300мс
+3. После остановки ввода на 300мс отправляется запрос
+
+**Механизм debounce**
+
+Реализован с помощью хука `useDebouncedCallback`. Это предотвращает множественные запросы при каждом нажатии клавиши.
+
+**Отображение результатов**
+
+Результаты поиска выводятся в компоненте `UsersSearchList`.
+Особенности:
+
+* Отображается индикатор загрузки
+* Список пользователей с аватарками и именами
+* Пагинация при большом количестве результатов
+
+**Логика взаимодействия с результатами поиска**
+
+При клике на пользователя, с которым уже есть чат:
+
+1. Модальное окно закрывается
+2. В правой части интерфейса отображаются сообщения
+3. Выбранный чат подсвечивается в списке слева
+
+Если чата с выбранным пользователем нет:
+
+1. В правой части отображается компонент `NewPrivateChat`
+2. Отображается заглушка: "Начните общение - напишите первое сообщение"
+3. При отправке сообщения:
+    * Сначала создается новый чат
+    * Затем отправляется сообщение
+    * Чат добавляется в список слева
+    * Интерфейс переключается в режим обычной переписки
+
+#### Работа с WebSocket
+
+**Инициализация соединения:**
+
+```js
+const client = new StompClient(accessToken, username, chat);
+client.connect();
+```
+
+**Очистка при размонтировании:**
+
+```js
+return () => {
+  client.disconnect();
+};
+```
+
+### MobX-store
+
+Приложение использует MobX для управления состоянием через два основных store:
+
+1. **UserStore** - управление данными аутентификации и пользователя
+2. **ChatStore** - управление данными чатов и сообщений
+
+**UserStore: управление пользовательскими данными**
+
+```js
+{
+  _isAuth: false,          // Флаг аутентификации
+  _user: {},               // Данные текущего пользователя
+  _isSearchUsers: false    // Флаг открытия поиска пользователей
+}
+```
+
+**ChatStore: управление чатами и сообщениями**
+
+```js
+{
+  _chats: [],             // Список чатов пользователя
+  _isChatSelected: false, // Флаг выбора чата
+  _selectedChat: {},      // Данные выбранного чата
+  _messages: [],          // Сообщения текущего чата
+  _messagesLoading: false // Флаг загрузки сообщений
+}
+```
+
+**Принципы работы MobX в приложении**
+
+* Все свойства помечены как observable с помощью `makeAutoObservable()`
+* Компоненты оборачиваются в `observer()`
+* UserStore, ChatStore доступны через useContext(Context)
+
+```js
+const {chat} = useContext(Context);
+```
+
+### WebSocket клиента (StompClient)
+
+Класс `StompClient` реализует:
+
+* Установку WebSocket соединения с сервером
+* Подписку на персональные уведомления
+* Обработку входящих уведомлений
+
+Клиент создается с тремя ключевыми параметрами:
+
+* Токен доступа (для авторизации)
+* Имя пользователя
+* Хранилище состояния чатов (для обновления интерфейса)
+
+После успешного подключения клиент подписывается на два персональных канала уведомлений:
+
+1. **Уведомления о чатах** - получает информацию о:
+    * Создании новых чатов
+    * Изменениях в существующих чатах
+2. **Уведомления о сообщениях** - обрабатывает события:
+    * Поступление новых сообщений
+    * Редактирование существующих сообщений
+    * Удаление сообщений
+
+При получении уведомления:
+
+* Данные парсятся из JSON-формата
+* Определяется тип уведомления
+* В зависимости от типа выполняются соответствующие действия
+
+### Docker
+
+Перед сборкой Docker-образа необходимо:
+
+1. Установить все зависимости: `npm install`
+2. Собрать приложение: `npm run build`
+
+Сборка и запуск контейнера для текущей версии приложения (0.1.0):
+
+```bash
+docker build -t messenger/messenger-ui:0.1.0 .
+docker run -p 3000:3000 --name messenger-ui messenger/messenger-ui:0.1.0
+```
+
 ## PostgreSQL
 
 **Запуск PostgreSQL в Docker**
@@ -546,3 +933,464 @@ docker run --name messenger-db -p 5433:5432 \
 # Лицензия
 
 Apache License. Подробнее см. в файле [LICENSE](LICENSE).
+
+
+
+
+Docker Compose
+Файл docker-compose.yaml разворачивает полную среду для разработки и тестирования платформы
+
+Все Spring Boot приложение запускаются с профилем docker.
+
+Запуск
+
+Требуется предварительно собрать JAR-файл и и build у реакта
+
+у и еще стоит написать что у меня есть 
+
+вот какой вот контейнер
+nginx:
+image: nginx:stable-alpine
+ports:
+- "80:80"
+volumes:
+- './nginx.conf:/etc/nginx/nginx.conf'
+depends_on:
+- ui
+networks:
+- messenger-network
+
+и вот его конфиг
+user root;
+worker_processes 1;
+
+events {
+}
+
+http {
+server {
+listen 80;
+
+        server_name localhost;
+
+        location / {
+            proxy_pass http://ui:3000;
+        }
+
+        location /api {
+            proxy_pass http://server:8080;
+        }
+    }
+}
+
+
+Команда запуска
+
+docker compose up -d
+
+
+про конфиг в проде
+
+также у меня есть папка в корпе проекта
+
+config/prod
+
+в котор 2 файла
+docker-compose.yml
+и
+nginx.conf - это конфиг nginx
+
+docker-compose.yml а докер комозе это тот файл который разворачивается в проде
+
+вот так он выглядит
+name: messenger
+services:
+db:
+image: postgres:16
+environment:
+POSTGRES_USER: admin
+POSTGRES_PASSWORD: admin
+POSTGRES_DB: messenger
+networks:
+- messenger-network
+server:
+image: artem20fedorov00/messenger-server
+restart: always
+environment:
+SPRING_PROFILES_ACTIVE: prod
+depends_on:
+- db
+networks:
+- messenger-network
+ui:
+image: artem20fedorov00/messenger-ui
+restart: always
+depends_on:
+- server
+networks:
+- messenger-network
+nginx:
+image: nginx:stable-alpine
+ports:
+- "80:80"
+volumes:
+- './nginx.conf:/etc/nginx/nginx.conf'
+depends_on:
+- ui
+networks:
+- messenger-network
+networks:
+messenger-network:
+
+основная суть в том
+
+что я пушу образы своих этих двух приложений на свой докер хаб
+
+и потом уже их разворачиваю в проде
+
+про гитхаб воркфлоу
+
+у меня есть 4
+pipeline-build-messenger-ui.yml
+pipeline-deploy-messenger-server.yml
+pipeline-deploy-messenger-ui.yml
+pipeline-test-messenger-server.yml
+
+вот как они выглядят
+name: build messenger ui
+
+on:
+pull_request:
+branches: [ master ]
+paths:
+- messenger-ui/**
+- 'docker-compose.yml'
+- .github/workflows/*-messenger-ui.yml
+jobs:
+build:
+runs-on: ubuntu-latest
+defaults:
+run:
+working-directory: ./messenger-ui
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: build
+        run: CI=false npm run build
+name: Deploy Messenger Server
+
+on:
+push:
+branches: [ master ]
+paths:
+- messenger-server/**
+- 'docker-compose.yml'
+- .github/workflows/*-messenger-server.yml
+jobs:
+test:
+name: Run Unit/Integration Tests
+runs-on: ubuntu-latest
+steps:
+- name: Checkout code
+uses: actions/checkout@v4
+with:
+fetch-depth: 0
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'oracle'
+
+      - name: Running Tests
+        run: |
+          cd messenger-server
+          mvn clean verify
+
+build:
+runs-on: ubuntu-latest
+name: Build Messenger Server
+needs: [ test ]
+steps:
+- name: Checkout code
+uses: actions/checkout@v4
+with:
+fetch-depth: 0
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'oracle'
+
+      - name: Compile project
+        run: |
+          cd messenger-server
+          mvn clean package -DskipTests
+
+build-image:
+name: Build and Push Docker Image
+runs-on: ubuntu-latest
+needs: [ build ]
+steps:
+- name: Checkout code
+uses: actions/checkout@v4
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'oracle'
+
+      - name: Extract project version
+        id: extract_version
+        run: |
+          cd messenger-server
+          echo "VERSION=$( mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression="project.version" -q -DforceStdout)" >> $GITHUB_OUTPUT
+
+      - name: Compile project
+        run: |
+          cd messenger-server
+          mvn clean package
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: messenger-server/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/messenger-server:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/messenger-server:${{ steps.extract_version.outputs.VERSION }}
+          build-args: |
+            JAR_FILE=messenger-server/target/messenger-server-${{ steps.extract_version.outputs.VERSION }}-exec.jar
+
+deploy:
+name: Deploy to VPS
+runs-on: ubuntu-latest
+needs: [ build-image ]
+steps:
+- name: Checkout code
+uses: actions/checkout@v4
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY  }}
+
+      - name: Add SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
+
+      - name: Create deployment folder
+        run: ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} "mkdir -p messenger-app"
+
+      - name: Copy docker-compose file
+        run: |
+          cd config/prod
+          scp docker-compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/docker-compose.yml
+
+      - name: Deploy Application to VPS
+        run: |
+          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} << 'EOF'
+           cd messenger-app
+           docker compose -f docker-compose.yml pull -q
+           docker compose -f docker-compose.yml up -d
+          EOF
+- name: Deploy messenger ui
+
+on:
+push:
+branches: [ master ]
+paths:
+- messenger-ui/**
+- 'docker-compose.yml'
+- .github/workflows/*-messenger-ui.yml
+jobs:
+build-image:
+name: Build Docker image
+runs-on: ubuntu-latest
+defaults:
+run:
+working-directory: ./messenger-ui
+steps:
+- name: Checkout code
+uses: actions/checkout@v4
+with:
+fetch-depth: 0
+- name: Extract project version
+id: extract_version
+run: |
+echo "VERSION=$(jq -r '.version' package.json)" >> $GITHUB_OUTPUT
+- name: Set up Node.js
+uses: actions/setup-node@v4
+with:
+node-version: 20
+- name: Install dependencies
+run: npm install
+- name: Build project
+run: CI=false npm run build
+- name: Login to DockerHub
+uses: docker/login-action@v3
+with:
+username: ${{ secrets.DOCKERHUB_USERNAME }}
+password: ${{ secrets.DOCKERHUB_TOKEN }}
+- name: Build image & Push to DockerHub
+uses: docker/build-push-action@v5
+with:
+context: messenger-ui
+file: messenger-ui/Dockerfile
+push: true
+platforms: linux/amd64
+tags: |
+${{ secrets.DOCKERHUB_USERNAME }}/messenger-ui:latest
+${{ secrets.DOCKERHUB_USERNAME }}/messenger-ui:${{ steps.extract_version.outputs.VERSION }}
+
+deploy:
+name: Deploy
+runs-on: ubuntu-latest
+needs: [ build-image ]
+steps:
+- name: Checkout code
+uses: actions/checkout@v4
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY  }}
+
+      - name: Add SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
+
+      - name: Create deployment folder
+        run: ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} "mkdir -p messenger-app"
+
+      - name: Copy docker-compose file
+        run: |
+          cd config/prod
+          scp docker-compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/docker-compose.yml
+
+      - name: Copy nginx.conf file
+        run: |
+          cd config/prod
+          scp nginx.conf ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/nginx.conf
+
+      - name: Deploy to VPS
+        run: |
+          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} << 'EOF'
+           cd messenger-app
+           docker compose -f docker-compose.yml pull -q
+           docker compose -f docker-compose.yml up -d
+          EOF
+name: Run Unit/Integration Tests for Messenger Server
+
+on:
+pull_request:
+branches: [ master ]
+paths:
+- messenger-server/**
+- 'docker-compose.yml'
+- .github/workflows/*-messenger-server.yml
+jobs:
+build:
+runs-on: ubuntu-latest
+defaults:
+run:
+working-directory: ./messenger-server
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'oracle'
+
+      - name: Run Unit Tests
+        run: mvn clean test
+
+      - name: Run Integration Tests
+        run: mvn failsafe:integration-test
+
+
+build messenger ui
+срабатывате когда мы делаем PR в master
+вот по таким путям
+paths:
+- messenger-ui/**
+- 'docker-compose.yml'
+- .github/workflows/*-messenger-ui.yml
+
+он проверяет собирается ли реакт приложение
+
+Run Unit/Integration Tests for Messenger Server
+
+pull_request:
+branches: [ master ]
+paths:
+- messenger-server/**
+- 'docker-compose.yml'
+- .github/workflows/*-messenger-server.yml
+
+суть в том что мы последовательно запускаем 
+юнит тесты а затем интеграционные
+
+Deploy Messenger Server
+
+push:
+branches: [ master ]
+paths:
+- messenger-server/**
+- 'docker-compose.yml'
+- .github/workflows/*-messenger-server.yml
+
+сначала мы запускаем тесты
+
+затем мы собираем проект
+
+затем мы собираем образ и пушим его на докер хаб
+
+затем разворачиваем новый образ на сервере
+
+Deploy messenger ui
+
+push:
+branches: [ master ]
+paths:
+- messenger-ui/**
+- 'docker-compose.yml'
+- .github/workflows/*-messenger-ui.yml
+
+мы собираем проект
+
+затем мы собираем образ и пушим его на докер хаб
+
+затем разворачиваем новый образ на сервере
