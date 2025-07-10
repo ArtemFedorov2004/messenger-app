@@ -716,14 +716,14 @@ Private routes (требуют авторизации):
 
 #### Детальное описание компонентов
 
-1. **Меню пользователя (Dropdown)**
+**Меню пользователя (Dropdown)**
 
 **Элементы меню:**
 
 * **Аккаунт** - перенаправляет на страницу профиля (`/profile`)
 * **Выйти** - выполняет выход из системы
 
-2. **Список чатов**
+**Список чатов**
 
 **Особенности:**
 
@@ -731,14 +731,14 @@ Private routes (требуют авторизации):
 * Подсвечивает выбранный чат
 * При клике обновляет правую часть интерфейса
 
-3. **Шапка чата (RightColumnHeader)**
+**Шапка чата (RightColumnHeader)**
 
 **Отображает:**
 
 * Аватар собеседника
 * Имя собеседника
 
-4. **Список сообщений (MessageList)**
+**Список сообщений (MessageList)**
 
 **Особенности реализации:**
 
@@ -750,7 +750,7 @@ Private routes (требуют авторизации):
 
 * Размер страницы: `MESSAGES_BATCH_SIZE`
 
-5. **Форма отправки сообщений**
+**Форма отправки сообщений**
 
 **Элементы:**
 
@@ -761,7 +761,7 @@ Private routes (требуют авторизации):
 
 * Отправка по клику или нажатию Enter
 
-6. **Контекстное меню сообщений**
+**Контекстное меню сообщений**
 
 Для собственных сообщений доступно меню (по правому клику):
 
@@ -916,6 +916,105 @@ docker build -t messenger/messenger-ui:0.1.0 .
 docker run -p 3000:3000 --name messenger-ui messenger/messenger-ui:0.1.0
 ```
 
+## Docker Compose
+
+**Конфигурация Nginx**
+
+* Проксирует трафик между фронтендом и бэкендом
+* Единая точка входа через порт 80
+
+**Запуск**
+
+**Требуется** предварительно собрать JAR бэкенда и собрать фронтенд.
+
+**Команда запуска**
+
+```bash
+docker compose up -d
+```
+
+## Production-конфигурация мессенджера
+
+**Структура проекта**
+
+В корневой директории проекта находится папка `config/prod`, содержащая файлы для production-развертывания:
+
+```text
+config/
+  prod/
+    docker-compose.yml  - Production-версия Docker Compose
+    nginx.conf         - Production-конфиг Nginx
+```
+
+Данный docker-compose файл разворачивает production-версию мессенджера с использованием предварительно собранных
+Docker-образов.
+
+Образы приложений загружаются из Docker Hub:
+
+* `artem20fedorov00/messenger-server` - бэкенд (Spring Boot)
+* `artem20fedorov00/messenger-ui` - фронтенд (React)
+
+**Процесс деплоя:**
+
+* Образы собираются и пушатся на Docker Hub заранее
+* На production-сервере только разворачиваются готовые образы
+
+## GitHub Workflows
+
+В проекте настроено 4 workflow.
+
+### pipeline-build-messenger-ui.yml
+
+**Триггер:** Pull Request в ветку master
+
+**Проверяет:** Сборку React приложения
+
+### pipeline-test-messenger-server.yml
+
+**Триггер:** Pull Request в ветку master
+
+**Выполняет:**
+
+* Запуск unit-тестов
+* Запуск интеграционных тестов
+
+### pipeline-deploy-messenger-server.yml
+
+**Триггер:** Push в ветку master
+
+**Этапы:**
+
+* Тестирование (unit + интеграционные тесты)
+* Сборка JAR-файла
+* Сборка Docker-образа
+* Пуш образа в Docker Hub
+* Деплой на production-сервер
+
+### pipeline-deploy-messenger-ui.yml
+
+**Триггер:** Push в ветку master
+
+**Этапы:**
+
+* Сборка React-приложения
+* Сборка Docker-образа
+* Пуш образа в Docker Hub
+* Деплой на production-сервер
+
+### Процесс деплоя
+
+1. При push в master:
+
+    * Запускается workflow
+    * Workflow собирает свой образ и пушит в Docker Hub
+
+2. На сервере выполняются команды:
+
+```bash
+docker compose pull -q
+docker compose up -d
+```
+
 ## PostgreSQL
 
 **Запуск PostgreSQL в Docker**
@@ -933,464 +1032,3 @@ docker run --name messenger-db -p 5433:5432 \
 # Лицензия
 
 Apache License. Подробнее см. в файле [LICENSE](LICENSE).
-
-
-
-
-Docker Compose
-Файл docker-compose.yaml разворачивает полную среду для разработки и тестирования платформы
-
-Все Spring Boot приложение запускаются с профилем docker.
-
-Запуск
-
-Требуется предварительно собрать JAR-файл и и build у реакта
-
-у и еще стоит написать что у меня есть 
-
-вот какой вот контейнер
-nginx:
-image: nginx:stable-alpine
-ports:
-- "80:80"
-volumes:
-- './nginx.conf:/etc/nginx/nginx.conf'
-depends_on:
-- ui
-networks:
-- messenger-network
-
-и вот его конфиг
-user root;
-worker_processes 1;
-
-events {
-}
-
-http {
-server {
-listen 80;
-
-        server_name localhost;
-
-        location / {
-            proxy_pass http://ui:3000;
-        }
-
-        location /api {
-            proxy_pass http://server:8080;
-        }
-    }
-}
-
-
-Команда запуска
-
-docker compose up -d
-
-
-про конфиг в проде
-
-также у меня есть папка в корпе проекта
-
-config/prod
-
-в котор 2 файла
-docker-compose.yml
-и
-nginx.conf - это конфиг nginx
-
-docker-compose.yml а докер комозе это тот файл который разворачивается в проде
-
-вот так он выглядит
-name: messenger
-services:
-db:
-image: postgres:16
-environment:
-POSTGRES_USER: admin
-POSTGRES_PASSWORD: admin
-POSTGRES_DB: messenger
-networks:
-- messenger-network
-server:
-image: artem20fedorov00/messenger-server
-restart: always
-environment:
-SPRING_PROFILES_ACTIVE: prod
-depends_on:
-- db
-networks:
-- messenger-network
-ui:
-image: artem20fedorov00/messenger-ui
-restart: always
-depends_on:
-- server
-networks:
-- messenger-network
-nginx:
-image: nginx:stable-alpine
-ports:
-- "80:80"
-volumes:
-- './nginx.conf:/etc/nginx/nginx.conf'
-depends_on:
-- ui
-networks:
-- messenger-network
-networks:
-messenger-network:
-
-основная суть в том
-
-что я пушу образы своих этих двух приложений на свой докер хаб
-
-и потом уже их разворачиваю в проде
-
-про гитхаб воркфлоу
-
-у меня есть 4
-pipeline-build-messenger-ui.yml
-pipeline-deploy-messenger-server.yml
-pipeline-deploy-messenger-ui.yml
-pipeline-test-messenger-server.yml
-
-вот как они выглядят
-name: build messenger ui
-
-on:
-pull_request:
-branches: [ master ]
-paths:
-- messenger-ui/**
-- 'docker-compose.yml'
-- .github/workflows/*-messenger-ui.yml
-jobs:
-build:
-runs-on: ubuntu-latest
-defaults:
-run:
-working-directory: ./messenger-ui
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: build
-        run: CI=false npm run build
-name: Deploy Messenger Server
-
-on:
-push:
-branches: [ master ]
-paths:
-- messenger-server/**
-- 'docker-compose.yml'
-- .github/workflows/*-messenger-server.yml
-jobs:
-test:
-name: Run Unit/Integration Tests
-runs-on: ubuntu-latest
-steps:
-- name: Checkout code
-uses: actions/checkout@v4
-with:
-fetch-depth: 0
-
-      - name: Setup JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'oracle'
-
-      - name: Running Tests
-        run: |
-          cd messenger-server
-          mvn clean verify
-
-build:
-runs-on: ubuntu-latest
-name: Build Messenger Server
-needs: [ test ]
-steps:
-- name: Checkout code
-uses: actions/checkout@v4
-with:
-fetch-depth: 0
-
-      - name: Setup JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'oracle'
-
-      - name: Compile project
-        run: |
-          cd messenger-server
-          mvn clean package -DskipTests
-
-build-image:
-name: Build and Push Docker Image
-runs-on: ubuntu-latest
-needs: [ build ]
-steps:
-- name: Checkout code
-uses: actions/checkout@v4
-
-      - name: Setup JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'oracle'
-
-      - name: Extract project version
-        id: extract_version
-        run: |
-          cd messenger-server
-          echo "VERSION=$( mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression="project.version" -q -DforceStdout)" >> $GITHUB_OUTPUT
-
-      - name: Compile project
-        run: |
-          cd messenger-server
-          mvn clean package
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: messenger-server/Dockerfile
-          push: true
-          platforms: linux/amd64
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/messenger-server:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/messenger-server:${{ steps.extract_version.outputs.VERSION }}
-          build-args: |
-            JAR_FILE=messenger-server/target/messenger-server-${{ steps.extract_version.outputs.VERSION }}-exec.jar
-
-deploy:
-name: Deploy to VPS
-runs-on: ubuntu-latest
-needs: [ build-image ]
-steps:
-- name: Checkout code
-uses: actions/checkout@v4
-
-      - name: Set up SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY  }}
-
-      - name: Add SSH known hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
-
-      - name: Create deployment folder
-        run: ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} "mkdir -p messenger-app"
-
-      - name: Copy docker-compose file
-        run: |
-          cd config/prod
-          scp docker-compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/docker-compose.yml
-
-      - name: Deploy Application to VPS
-        run: |
-          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} << 'EOF'
-           cd messenger-app
-           docker compose -f docker-compose.yml pull -q
-           docker compose -f docker-compose.yml up -d
-          EOF
-- name: Deploy messenger ui
-
-on:
-push:
-branches: [ master ]
-paths:
-- messenger-ui/**
-- 'docker-compose.yml'
-- .github/workflows/*-messenger-ui.yml
-jobs:
-build-image:
-name: Build Docker image
-runs-on: ubuntu-latest
-defaults:
-run:
-working-directory: ./messenger-ui
-steps:
-- name: Checkout code
-uses: actions/checkout@v4
-with:
-fetch-depth: 0
-- name: Extract project version
-id: extract_version
-run: |
-echo "VERSION=$(jq -r '.version' package.json)" >> $GITHUB_OUTPUT
-- name: Set up Node.js
-uses: actions/setup-node@v4
-with:
-node-version: 20
-- name: Install dependencies
-run: npm install
-- name: Build project
-run: CI=false npm run build
-- name: Login to DockerHub
-uses: docker/login-action@v3
-with:
-username: ${{ secrets.DOCKERHUB_USERNAME }}
-password: ${{ secrets.DOCKERHUB_TOKEN }}
-- name: Build image & Push to DockerHub
-uses: docker/build-push-action@v5
-with:
-context: messenger-ui
-file: messenger-ui/Dockerfile
-push: true
-platforms: linux/amd64
-tags: |
-${{ secrets.DOCKERHUB_USERNAME }}/messenger-ui:latest
-${{ secrets.DOCKERHUB_USERNAME }}/messenger-ui:${{ steps.extract_version.outputs.VERSION }}
-
-deploy:
-name: Deploy
-runs-on: ubuntu-latest
-needs: [ build-image ]
-steps:
-- name: Checkout code
-uses: actions/checkout@v4
-
-      - name: Set up SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY  }}
-
-      - name: Add SSH known hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
-
-      - name: Create deployment folder
-        run: ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} "mkdir -p messenger-app"
-
-      - name: Copy docker-compose file
-        run: |
-          cd config/prod
-          scp docker-compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/docker-compose.yml
-
-      - name: Copy nginx.conf file
-        run: |
-          cd config/prod
-          scp nginx.conf ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:messenger-app/nginx.conf
-
-      - name: Deploy to VPS
-        run: |
-          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} << 'EOF'
-           cd messenger-app
-           docker compose -f docker-compose.yml pull -q
-           docker compose -f docker-compose.yml up -d
-          EOF
-name: Run Unit/Integration Tests for Messenger Server
-
-on:
-pull_request:
-branches: [ master ]
-paths:
-- messenger-server/**
-- 'docker-compose.yml'
-- .github/workflows/*-messenger-server.yml
-jobs:
-build:
-runs-on: ubuntu-latest
-defaults:
-run:
-working-directory: ./messenger-server
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Java 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'oracle'
-
-      - name: Run Unit Tests
-        run: mvn clean test
-
-      - name: Run Integration Tests
-        run: mvn failsafe:integration-test
-
-
-build messenger ui
-срабатывате когда мы делаем PR в master
-вот по таким путям
-paths:
-- messenger-ui/**
-- 'docker-compose.yml'
-- .github/workflows/*-messenger-ui.yml
-
-он проверяет собирается ли реакт приложение
-
-Run Unit/Integration Tests for Messenger Server
-
-pull_request:
-branches: [ master ]
-paths:
-- messenger-server/**
-- 'docker-compose.yml'
-- .github/workflows/*-messenger-server.yml
-
-суть в том что мы последовательно запускаем 
-юнит тесты а затем интеграционные
-
-Deploy Messenger Server
-
-push:
-branches: [ master ]
-paths:
-- messenger-server/**
-- 'docker-compose.yml'
-- .github/workflows/*-messenger-server.yml
-
-сначала мы запускаем тесты
-
-затем мы собираем проект
-
-затем мы собираем образ и пушим его на докер хаб
-
-затем разворачиваем новый образ на сервере
-
-Deploy messenger ui
-
-push:
-branches: [ master ]
-paths:
-- messenger-ui/**
-- 'docker-compose.yml'
-- .github/workflows/*-messenger-ui.yml
-
-мы собираем проект
-
-затем мы собираем образ и пушим его на докер хаб
-
-затем разворачиваем новый образ на сервере
