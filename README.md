@@ -872,7 +872,7 @@ return () => {
 const {chat} = useContext(Context);
 ```
 
-### WebSocket клиента (StompClient)
+### WebSocket клиент (StompClient)
 
 Класс `StompClient` реализует:
 
